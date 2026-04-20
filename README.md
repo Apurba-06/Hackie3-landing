@@ -1,6 +1,6 @@
-# ⚡ Hack_IE³ | System Override
+# ⚡ HACK_IE³ | System Override
 
-**Hack_IE³** is a premier 48-hour neural dive into the future of decentralized tech, AI, and systems architecture. Hosted at **Jadavpur University**, this event challenges developers to break boundaries and code the impossible.
+**HACK_IE³** is a premier 48-hour neural dive into the future of decentralized tech, AI, and systems architecture. Hosted at **Jadavpur University**, this event challenges developers to break boundaries and code the impossible.
 
 ---
 
