@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HackIE³ | System Override</title>
+    <style>
+        /* CORE VARIABLES & RESET */
+        :root {
+            --base: #020204;
+            --surface: #0a0b10;
+            --primary: #00f0ff;
+            --secondary: #ff0055;
+            --text: #e0e0ff;
+            --font-main: 'Courier New', Courier, monospace;
+        }
+        
+        /* OVERCLOCK MODE VARIABLES */
+        body.overclocked {
+            --primary: #00ff00;
+            --secondary: #008800;
+            --text: #ccffcc;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; cursor: none !important; }
+        body { background: var(--base); color: var(--text); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; overflow-x: hidden; scroll-behavior: smooth; transition: --primary 0.5s, --secondary 0.5s; }
+        
+        /* CUSTOM SCROLLBAR */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--base); }
+        ::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 10px; box-shadow: 0 0 10px var(--primary); }
+        ::-webkit-scrollbar-thumb:hover { background: var(--secondary); }
+
+        /* CUSTOM CURSOR */
+        .cursor-dot { width: 6px; height: 6px; background: var(--primary); border-radius: 50%; position: fixed; top: 0; left: 0; pointer-events: none; z-index: 9999; transform: translate(-50%, -50%); box-shadow: 0 0 10px var(--primary); }
+        .cursor-outline { width: 30px; height: 30px; border: 1px solid var(--primary); border-radius: 50%; position: fixed; top: 0; left: 0; pointer-events: none; z-index: 9998; transform: translate(-50%, -50%); transition: width 0.2s, height 0.2s, background-color 0.2s; }
+        .cursor-outline.hover { width: 50px; height: 50px; background-color: rgba(0, 240, 255, 0.1); border-color: var(--secondary); }
+        body.overclocked .cursor-outline.hover { background-color: rgba(0, 255, 0, 0.1); }
+
+        /* PRELOADER */
+        #preloader { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: var(--base); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; font-family: var(--font-main); color: var(--primary); transition: opacity 0.5s ease; }
+        .loader-text { font-size: 1.5rem; margin-bottom: 20px; text-shadow: 0 0 10px var(--primary); }
+        .loader-bar { width: 300px; height: 2px; background: rgba(0,240,255,0.2); position: relative; overflow: hidden; }
+        .loader-bar::after { content: ''; position: absolute; top: 0; left: -50%; width: 50%; height: 100%; background: var(--primary); box-shadow: 0 0 10px var(--primary); animation: load 1.5s ease-in-out forwards; }
+        @keyframes load { 0% { left: -50%; } 100% { left: 100%; } }
+
+        /* FULLSCREEN CANVAS BACKGROUND */
+        #network-canvas { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -2; opacity: 0.6; }
+        .vignette { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: radial-gradient(circle, transparent 20%, var(--base) 90%); z-index: -1; pointer-events: none; }
+
+        /* CYBERPUNK NAV */
+        nav { position: fixed; top: 0; width: 100%; padding: 20px 5%; display: flex; justify-content: space-between; align-items: center; z-index: 100; background: linear-gradient(180deg, rgba(2,2,4,0.9) 0%, transparent 100%); backdrop-filter: blur(5px); }
+        .logo { font-family: var(--font-main); font-size: 24px; font-weight: 900; color: var(--text); text-shadow: 0 0 10px var(--primary); letter-spacing: 2px; }
+        .nav-links a { color: var(--text); text-decoration: none; margin-left: 30px; font-size: 14px; text-transform: uppercase; letter-spacing: 2px; transition: 0.3s; }
+        .nav-links a:hover { color: var(--primary); text-shadow: 0 0 8px var(--primary); }
+        .cy-btn { background: transparent; color: var(--primary); border: 1px solid var(--primary); padding: 12px 25px; font-family: var(--font-main); font-weight: bold; text-transform: uppercase; letter-spacing: 2px; clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px); position: relative; transition: 0.2s; display: inline-block; text-align: center; margin-left: 20px; text-decoration: none;}
+        .cy-btn:hover { background: var(--primary); color: var(--base); box-shadow: 0 0 20px var(--primary); transform: scale(1.05); }
+
+        /* HERO & GLITCH EFFECT */
+        header { height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; padding: 0 10%; position: relative; }
+        .glitch { font-size: clamp(4rem, 8vw, 8rem); font-weight: 900; line-height: 1; text-transform: uppercase; position: relative; color: var(--text); margin-bottom: 20px; }
+        .glitch::before, .glitch::after { content: attr(data-text); position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0.8; }
+        .glitch::before { color: var(--primary); z-index: -1; animation: glitch-anim-1 2s infinite linear alternate-reverse; }
+        .glitch::after { color: var(--secondary); z-index: -2; animation: glitch-anim-2 3s infinite linear alternate-reverse; }
+        @keyframes glitch-anim-1 { 0% { clip-path: inset(20% 0 80% 0); transform: translate(-2px, 1px); } 20% { clip-path: inset(60% 0 10% 0); transform: translate(2px, -1px); } 40% { clip-path: inset(40% 0 50% 0); transform: translate(-2px, 2px); } 60% { clip-path: inset(80% 0 5% 0); transform: translate(2px, -2px); } 80% { clip-path: inset(10% 0 70% 0); transform: translate(-1px, 1px); } 100% { clip-path: inset(30% 0 50% 0); transform: translate(1px, -1px); } }
+        @keyframes glitch-anim-2 { 0% { clip-path: inset(10% 0 60% 0); transform: translate(2px, -1px); } 20% { clip-path: inset(30% 0 20% 0); transform: translate(-2px, 1px); } 40% { clip-path: inset(70% 0 10% 0); transform: translate(2px, -2px); } 60% { clip-path: inset(20% 0 50% 0); transform: translate(-2px, 2px); } 80% { clip-path: inset(50% 0 30% 0); transform: translate(1px, -1px); } 100% { clip-path: inset(5% 0 80% 0); transform: translate(-1px, 1px); } }
+        header p { font-size: 1.2rem; max-width: 600px; margin-bottom: 30px; color: #aaa; border-left: 3px solid var(--primary); padding-left: 15px; }
+
+        /* LIVE COUNTDOWN TIMER */
+        .countdown { display: flex; gap: 15px; margin-bottom: 40px; flex-wrap: wrap; }
+        .time-box { background: rgba(0, 240, 255, 0.05); border: 1px solid var(--primary); padding: 15px 20px; text-align: center; min-width: 90px; box-shadow: inset 0 0 15px rgba(0,240,255,0.1); border-radius: 4px; backdrop-filter: blur(5px); }
+        body.overclocked .time-box { background: rgba(0, 255, 0, 0.05); box-shadow: inset 0 0 15px rgba(0,255,0,0.1); }
+        .time-val { font-size: 2.5rem; font-family: var(--font-main); font-weight: bold; color: var(--text); text-shadow: 0 0 15px var(--primary); display: block; line-height: 1; margin-bottom: 5px; }
+        .time-label { font-size: 0.75rem; color: var(--secondary); text-transform: uppercase; letter-spacing: 2px; font-weight: bold; }
+
+        /* SECTIONS & TYPOGRAPHY */
+        section { padding: 100px 10%; position: relative; z-index: 10; border-top: 1px solid rgba(0,240,255,0.1); background: transparent; }
+        .sec-title { font-size: 3rem; text-transform: uppercase; margin-bottom: 60px; display: inline-block; border-bottom: 2px solid var(--secondary); padding-bottom: 10px; }
+
+        /* DYNAMIC STATS SECTION */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 30px; text-align: center; background: rgba(10, 11, 16, 0.6); backdrop-filter: blur(10px); padding: 50px; border-radius: 8px; border: 1px solid rgba(0,240,255,0.1); box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+        .stat-box { white-space: nowrap; }
+        .stat-num { font-size: 4rem; font-family: var(--font-main); font-weight: 900; color: var(--primary); text-shadow: 0 0 20px var(--primary); display: inline-block; }
+        .stat-prefix, .stat-plus { font-size: 3rem; color: var(--primary); font-family: var(--font-main); font-weight: bold; }
+        .stat-label { font-size: 1.2rem; color: #aaa; text-transform: uppercase; letter-spacing: 2px; margin-top: 10px; display: block; white-space: normal; }
+
+        /* 3D ROTATING CHALLENGE TRACKS - BACKFACE HIDDEN */
+        .carousel-container { perspective: 1200px; perspective-origin: 50% 10%; width: 100%; height: 500px; display: flex; justify-content: center; align-items: center; position: relative; margin-top: 40px; }
+        
+        .carousel { position: absolute; width: 300px; height: 250px; transform-style: preserve-3d; animation: rotateCarousel 25s linear infinite; z-index: 1; display: flex; justify-content: center; align-items: center; }
+        .carousel:hover { animation-play-state: paused; }
+        
+        .track-card { 
+            position: absolute; width: 300px; background: rgba(10, 11, 16, 0.95); backdrop-filter: blur(10px); 
+            border: 1px solid rgba(0,240,255,0.3); padding: 30px; border-radius: 8px; text-decoration: none; 
+            color: inherit; transition: 0.3s; 
+            transform: rotateY(calc(var(--i) * 72deg)) translateZ(380px); 
+            box-shadow: inset 0 0 20px rgba(0,240,255,0.05), 0 10px 30px rgba(0,0,0,0.8); 
+            
+            /* Hides the card completely when it rotates to the back of the carousel */
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+        }
+        
+        .track-card::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: var(--secondary); transition: 0.4s; }
+        .track-card:hover { border-color: var(--primary); box-shadow: inset 0 0 40px rgba(0,240,255,0.1), 0 0 30px rgba(0,240,255,0.3); }
+        .track-card:hover::before { width: 100%; opacity: 0.15; background: var(--primary); }
+        
+        .track-title { font-size: 1.4rem; color: var(--text); margin-bottom: 15px; font-weight: bold; letter-spacing: 1px; }
+        .track-desc { color: #aaa; line-height: 1.6; font-size: 0.9rem; margin-bottom: 15px; }
+        .track-explore { font-family: var(--font-main); font-size: 0.8rem; color: var(--primary); opacity: 0; transition: 0.3s; transform: translateX(-10px); display: block; font-weight: bold;}
+        .track-card:hover .track-explore { opacity: 1; transform: translateX(0); }
+        
+        @keyframes rotateCarousel {
+            0% { transform: rotateY(0deg); }
+            100% { transform: rotateY(-360deg); }
+        }
+
+        /* TIMELINE SCHEDULE */
+        .timeline { position: relative; max-width: 800px; margin: 0 auto; }
+        .timeline::before { content: ''; position: absolute; left: 20px; top: 0; width: 2px; height: 100%; background: linear-gradient(to bottom, var(--primary), var(--secondary)); }
+        .tl-item { position: relative; padding-left: 60px; margin-bottom: 40px; opacity: 0; transform: translateX(-50px); transition: 0.8s ease; }
+        .tl-item.visible { opacity: 1; transform: translateX(0); }
+        .tl-item::before { content: ''; position: absolute; left: 14px; top: 5px; width: 14px; height: 14px; background: var(--base); border: 2px solid var(--primary); border-radius: 50%; box-shadow: 0 0 10px var(--primary); transition: 0.3s; }
+        .tl-item:hover::before { background: var(--primary); transform: scale(1.5); }
+        .tl-time { font-family: var(--font-main); color: var(--primary); font-size: 1.2rem; font-weight: bold; margin-bottom: 5px; display: block; }
+        .tl-content { background: rgba(10, 11, 16, 0.8); backdrop-filter: blur(5px); padding: 20px; border: 1px solid rgba(255,255,255,0.05); border-radius: 5px; }
+
+        /* PRIZES / BOUNTY BOARD */
+        .prize-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 30px; }
+        .prize-card { background: rgba(10, 11, 16, 0.8); backdrop-filter: blur(5px); border: 1px solid rgba(255,0,85,0.3); padding: 40px 20px; text-align: center; position: relative; overflow: hidden; transition: 0.4s; border-radius: 4px; }
+        .prize-card:hover { border-color: var(--secondary); box-shadow: 0 0 30px rgba(255,0,85,0.15); transform: translateY(-5px); }
+        .prize-rank { font-size: 1.2rem; color: var(--text); margin-bottom: 15px; font-weight: bold; text-transform: uppercase; letter-spacing: 2px; }
+        .prize-amount { font-family: var(--font-main); font-size: clamp(2rem, 6vw, 2.8rem); color: var(--secondary); text-shadow: 0 0 15px var(--secondary); margin-bottom: 15px; line-height: 1; font-weight: bold; }
+        .prize-desc { color: #aaa; font-size: 0.95rem; line-height: 1.5; }
+        .prize-card.grand { border-color: var(--primary); box-shadow: 0 0 20px rgba(0,240,255,0.1); transform: scale(1.05); z-index: 2; }
+        .prize-card.grand:hover { border-color: var(--primary); box-shadow: 0 0 40px rgba(0,240,255,0.3); transform: scale(1.05) translateY(-5px); }
+        .prize-card.grand .prize-amount { color: var(--primary); text-shadow: 0 0 20px var(--primary); font-size: clamp(2.4rem, 7vw, 3.4rem); }
+        .prize-card.grand::before { content: 'SYSTEM OVERLORD'; position: absolute; top: 10px; right: -30px; background: var(--primary); color: var(--base); font-size: 0.7rem; font-weight: bold; padding: 5px 30px; transform: rotate(45deg); letter-spacing: 1px; }
+
+        /* THE OVERSEERS (JUDGES) */
+        .judge-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 30px; }
+        .judge-card { border: 1px solid rgba(0,240,255,0.1); padding: 30px; text-align: center; transition: 0.4s; border-radius: 4px; position: relative; overflow: hidden; background: rgba(10, 11, 16, 0.8); backdrop-filter: blur(5px);}
+        .judge-card:hover { border-color: var(--primary); box-shadow: 0 0 20px rgba(0,240,255,0.15); transform: translateY(-5px); }
+        
+        .judge-avatar { width: 120px; height: 120px; margin: 0 auto 20px; border-radius: 50%; border: 2px solid rgba(0,240,255,0.2); filter: blur(3px) grayscale(100%); transition: 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275); position: relative; overflow: hidden; z-index: 2; }
+        .judge-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .judge-card:hover .judge-avatar { filter: blur(0px) grayscale(0%); border-color: var(--primary); box-shadow: 0 0 20px var(--primary) inset; }
+        
+        .judge-name { font-size: 1.2rem; color: var(--text); font-weight: bold; margin-bottom: 5px; position: relative; z-index: 2; text-shadow: 0 2px 4px #000;}
+        .judge-role { color: var(--secondary); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; font-family: var(--font-main); position: relative; z-index: 2; text-shadow: 0 2px 4px #000;}
+
+        /* PURE CSS SPONSORS (NO IMAGES) */
+        .sponsor-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }
+        .sponsor-card { height: 120px; background: rgba(10, 11, 16, 0.6); backdrop-filter: blur(5px); border: 1px solid rgba(0, 240, 255, 0.2); display: flex; justify-content: center; align-items: center; position: relative; overflow: hidden; transition: 0.4s; text-decoration: none; color: inherit; border-radius: 8px; box-shadow: inset 0 0 20px rgba(0,240,255,0.05); }
+        .sponsor-card h3 { z-index: 2; font-size: 1.5rem; letter-spacing: 4px; transition: 0.3s; color: rgba(255,255,255,0.5); font-family: var(--font-main); font-weight: bold; }
+        .sponsor-card::after { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: repeating-linear-gradient(transparent, transparent 2px, var(--primary) 3px, var(--primary) 3px), linear-gradient(90deg, transparent, rgba(0,240,255,0.1), transparent); background-size: 100% 4px, 100% 100%; opacity: 0; z-index: 1; transition: 0.3s; pointer-events: none;}
+        
+        .sponsor-card:hover { border-color: var(--primary); box-shadow: 0 0 30px rgba(0,240,255,0.2), inset 0 0 20px rgba(0,240,255,0.1); transform: translateY(-5px); }
+        .sponsor-card:hover h3 { color: var(--primary); text-shadow: 0 0 15px var(--primary); letter-spacing: 6px; }
+        .sponsor-card:hover::after { opacity: 1; animation: scan 1s linear infinite; }
+        @keyframes scan { 0% { background-position: 0 0, 0 0; } 100% { background-position: 0 50px, 100px 0; } }
+
+        /* INTERACTIVE 3D GLOBE MAP */
+        .map-container { display: flex; align-items: center; gap: 50px; flex-wrap: wrap; justify-content: center;}
+        .map-info { flex: 1; min-width: 300px; }
+        .globe-wrapper { position: relative; width: 350px; height: 350px; border-radius: 50%; border: 1px solid rgba(0,240,255,0.2); box-shadow: 0 0 50px rgba(0,240,255,0.1) inset, 0 0 20px rgba(0,240,255,0.05); overflow: hidden; background: radial-gradient(circle at 30% 30%, rgba(10,11,16,0.8), #020204 80%); }
+        .globe-wrapper.dragging { cursor: grabbing !important; }
+        .globe-hint { position: absolute; bottom: 15px; width: 100%; text-align: center; color: rgba(0,240,255,0.5); font-size: 0.7rem; font-family: var(--font-main); letter-spacing: 2px; pointer-events: none; z-index: 5; text-shadow: 0 0 5px var(--base); }
+
+        /* FAQ ACCORDION */
+        .faq-grid { max-width: 800px; margin: 0 auto; }
+        .faq-item { background: rgba(10, 11, 16, 0.8); backdrop-filter: blur(5px); border: 1px solid rgba(0,240,255,0.2); margin-bottom: 15px; border-radius: 4px; overflow: hidden; transition: 0.3s; }
+        .faq-item:hover { border-color: var(--primary); box-shadow: 0 0 15px rgba(0,240,255,0.1); }
+        .faq-q { padding: 20px; font-weight: bold; cursor: pointer; display: flex; justify-content: space-between; align-items: center; color: var(--text); font-family: var(--font-main); }
+        .faq-q::after { content: '+'; color: var(--primary); font-size: 1.5rem; transition: 0.3s; }
+        .faq-item.active .faq-q::after { content: '-'; color: var(--secondary); transform: rotate(180deg); }
+        .faq-a { padding: 0 20px; max-height: 0; opacity: 0; overflow: hidden; transition: all 0.3s ease-in-out; color: #aaa; }
+        .faq-item.active .faq-a { padding: 0 20px 20px 20px; max-height: 200px; opacity: 1; }
+
+        /* FOOTER */
+        footer { background: rgba(10, 11, 16, 0.4); backdrop-filter: blur(5px); padding: 40px 10%; text-align: center; border-top: 1px solid rgba(0,240,255,0.2); position: relative; z-index: 10; font-family: var(--font-main); }
+        .social-nodes a { color: var(--primary); margin: 0 15px; text-decoration: none; text-transform: uppercase; letter-spacing: 1px; transition: 0.3s; }
+        .social-nodes a:hover { color: var(--secondary); text-shadow: 0 0 8px var(--secondary); }
+        .footer-text { margin-top: 20px; color: #666; font-size: 0.9rem; }
+
+        /* TERMINAL MODAL */
+        .modal { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(2,2,4,0.95); backdrop-filter: blur(10px); display: flex; justify-content: center; align-items: center; z-index: 2000; opacity: 0; pointer-events: none; transition: 0.3s; }
+        .modal.active { opacity: 1; pointer-events: all; }
+        .terminal { width: 90%; max-width: 600px; background: #000; border: 1px solid var(--primary); box-shadow: 0 0 30px rgba(0,240,255,0.2); padding: 30px; font-family: var(--font-main); position: relative; }
+        .term-header { border-bottom: 1px solid var(--primary); padding-bottom: 10px; margin-bottom: 20px; color: var(--primary); font-weight: bold; display: flex; justify-content: space-between;}
+        .close-btn { color: var(--secondary); cursor: pointer; text-shadow: 0 0 5px var(--secondary); }
+        .term-body { color: var(--primary); min-height: 150px; margin-bottom: 20px; line-height: 1.5; }
+        .input-line { display: flex; gap: 10px; align-items: center;}
+        .input-line span { color: var(--secondary); }
+        .term-input { background: transparent; border: none; border-bottom: 1px solid var(--primary); color: #fff; font-family: var(--font-main); width: 100%; outline: none; font-size: 1rem; }
+        
+        /* SYSTEM NOTIFICATIONS */
+        #overclock-msg { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #00ff00; color: #000; padding: 10px 20px; font-family: var(--font-main); font-weight: bold; border-radius: 4px; z-index: 10000; opacity: 0; pointer-events: none; transition: 0.3s; text-align: center; }
+        #overclock-msg.show { opacity: 1; }
+
+        /* RESPONSIVE FIXES */
+        @media (max-width: 768px) {
+            .nav-links { display: none; }
+            .glitch { font-size: 3rem; }
+            .timeline::before { left: 10px; }
+            .tl-item { padding-left: 40px; }
+            .tl-item::before { left: 4px; }
+            .map-container { flex-direction: column; }
+            .prize-card.grand { transform: scale(1); }
+            .prize-card.grand:hover { transform: translateY(-5px); }
+            .cursor-dot, .cursor-outline { display: none; } 
+            * { cursor: auto !important; }
+            
+            /* Scale down 3D Carousel on Mobile */
+            .carousel-container { transform: scale(0.65); margin-top: -20px; margin-bottom: -50px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="overclock-msg">SYSTEM OVERCLOCKED: MATRIX MODE ENGAGED</div>
+
+    <div class="cursor-dot" id="cursor-dot"></div>
+    <div class="cursor-outline" id="cursor-outline"></div>
+
+    <div id="preloader">
+        <div class="loader-text">INITIALIZING HACK_IE³ OS...</div>
+        <div class="loader-bar"></div>
+    </div>
+
+    <canvas id="network-canvas"></canvas>
+    <div class="vignette"></div>
+
+    <nav>
+        <div class="logo">HACK_IE³</div>
+        <div class="nav-links">
+            <a href="#about" class="magnetic play-sound hover-target">Protocol</a>
+            <a href="#tracks" class="magnetic play-sound hover-target">Directives</a>
+            <a href="#timeline" class="magnetic play-sound hover-target">Timeline</a>
+            <a href="#bounties" class="magnetic play-sound hover-target">Bounties</a>
+            <a href="#judges" class="magnetic play-sound hover-target">Overseers</a>
+        </div>
+        <button class="cy-btn magnetic play-sound hover-target" onclick="initTerminal()">Connect</button>
+    </nav>
+
+    <header id="about">
+        <h1 class="glitch hover-target" data-text="HACK_IE³">HACK_IE³</h1>
+        <p>A 48-hour neural dive into the future of decentralized tech, AI, and systems architecture. No limits. No boundaries. Code the impossible.</p>
+        
+        <div class="countdown hover-target">
+            <div class="time-box">
+                <span class="time-val" id="cd-days">00</span>
+                <span class="time-label">Days</span>
+            </div>
+            <div class="time-box">
+                <span class="time-val" id="cd-hours">00</span>
+                <span class="time-label">Hours</span>
+            </div>
+            <div class="time-box">
+                <span class="time-val" id="cd-mins">00</span>
+                <span class="time-label">Mins</span>
+            </div>
+            <div class="time-box">
+                <span class="time-val" id="cd-secs">00</span>
+                <span class="time-label">Secs</span>
+            </div>
+        </div>
+
+        <button class="cy-btn magnetic play-sound hover-target" onclick="initTerminal()">Initialize Registration</button>
+    </header>
+
+    <section id="stats">
+        <div class="stats-grid hover-target">
+            <div class="stat-box">
+                <span class="stat-num" data-target="500">0</span><span class="stat-plus">+</span>
+                <span class="stat-label">Hackers</span>
+            </div>
+            <div class="stat-box">
+                <span class="stat-num" data-target="48">0</span>
+                <span class="stat-label">Hours of Code</span>
+            </div>
+            <div class="stat-box">
+                <span class="stat-prefix">₹</span><span class="stat-num" data-target="175000">0</span>
+                <span class="stat-label">In Bounties</span>
+            </div>
+        </div>
+    </section>
+
+    <section id="tracks" style="overflow: hidden;">
+        <h2 class="sec-title hover-target" style="display: block; text-align: center; width: 100%;">System Directives</h2>
+        <p style="text-align: center; color: #888; margin-bottom: 20px;">Hover to isolate. Click to initiate external knowledge retrieval.</p>
+        
+        <div class="carousel-container hover-target">
+            <div class="carousel">
+                <a href="https://www.google.com/search?q=AI+and+Neural+Networks+hackathon+project+ideas" target="_blank" class="track-card play-sound" style="--i: 0;">
+                    <div class="track-title">< AI & Neural Nets /></div>
+                    <div class="track-desc">Train, prompt, and deploy. Build agents that solve real-world problems.</div>
+                    <span class="track-explore">Search Ideas ↗</span>
+                </a>
+                <a href="https://www.google.com/search?q=Web3+and+DeFi+hackathon+project+ideas" target="_blank" class="track-card play-sound" style="--i: 1;">
+                    <div class="track-title">< Web3 & DeFi /></div>
+                    <div class="track-desc">Decentralize everything. Write smart contracts and redefine digital ownership.</div>
+                    <span class="track-explore">Search Ideas ↗</span>
+                </a>
+                <a href="https://www.google.com/search?q=Cyber-Security+hackathon+project+ideas" target="_blank" class="track-card play-sound" style="--i: 2;">
+                    <div class="track-title">< Cyber-Security /></div>
+                    <div class="track-desc">Defend the grid. Build tools for encryption and threat detection.</div>
+                    <span class="track-explore">Search Ideas ↗</span>
+                </a>
+                <a href="https://www.google.com/search?q=Autonomous+Robotics+hardware+hackathon+ideas" target="_blank" class="track-card play-sound" style="--i: 3;">
+                    <div class="track-title">< Auto-Robotics /></div>
+                    <div class="track-desc">Build vision-guided systems, embedded hardware solutions, and IoT.</div>
+                    <span class="track-explore">Search Ideas ↗</span>
+                </a>
+                <a href="https://www.google.com/search?q=Open+Innovation+best+hackathon+projects" target="_blank" class="track-card play-sound" style="--i: 4;">
+                    <div class="track-title">< Open Innovation /></div>
+                    <div class="track-desc">No limits. No predefined categories. Solve a unique problem using any stack.</div>
+                    <span class="track-explore">Search Ideas ↗</span>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <section id="timeline">
+        <h2 class="sec-title hover-target">Execution Sequence</h2>
+        <div class="timeline">
+            <div class="tl-item hover-target">
+                <span class="tl-time">04/06/26 - 09:00H</span>
+                <div class="tl-content">
+                    <h3>Mainframe Access</h3>
+                    <p>Hackers check-in, form teams, and establish local development environments. Opening remarks by lead engineers.</p>
+                </div>
+            </div>
+            <div class="tl-item hover-target">
+                <span class="tl-time">05/06/26 - 12:00H</span>
+                <div class="tl-content">
+                    <h3>Compile Start</h3>
+                    <p>The 48-hour hacking window opens. Server access granted. API keys distributed.</p>
+                </div>
+            </div>
+            <div class="tl-item hover-target">
+                <span class="tl-time">06/06/26 - 14:00H</span>
+                <div class="tl-content">
+                    <h3>Node Synchronization</h3>
+                    <p>Mid-point check-ins. Workshops on Web3 integration and LLM fine-tuning. Food rations deployed.</p>
+                </div>
+            </div>
+            <div class="tl-item hover-target">
+                <span class="tl-time">07/06/26 - 12:00H</span>
+                <div class="tl-content">
+                    <h3>System Freeze</h3>
+                    <p>Pencils down. Git pushes finalized. Preparation for pitch architecture and live demos.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="bounties">
+        <h2 class="sec-title hover-target">System Bounties</h2>
+        <p style="margin-bottom: 40px; color: #888;">Decrypt the mainframe. Claim the rewards.</p>
+        <div class="prize-grid">
+            <div class="prize-card hover-target">
+                <div class="prize-rank">Best UI/UX Node</div>
+                <div class="prize-amount">₹25,000</div>
+                <div class="prize-desc">Awarded to the team with the most seamless, visually stunning, and user-centric frontend interface.</div>
+            </div>
+            <div class="prize-card grand hover-target">
+                <div class="prize-rank">Global First Place</div>
+                <div class="prize-amount">₹1,00,000</div>
+                <div class="prize-desc">The ultimate prize. Awarded for the most innovative, technically complex, and perfectly executed project of the event.</div>
+            </div>
+            <div class="prize-card hover-target">
+                <div class="prize-rank">Best Deep Tech</div>
+                <div class="prize-amount">₹50,000</div>
+                <div class="prize-desc">Awarded for the best utilization of Machine Learning, Blockchain, or hardware-integrated software.</div>
+            </div>
+        </div>
+    </section>
+
+    <section id="judges">
+        <h2 class="sec-title hover-target">The Overseers</h2>
+        <p style="margin-bottom: 40px; color: #888;">Hover to decrypt identity.</p>
+        <div class="judge-grid">
+            <div class="judge-card hover-target">
+                <div class="judge-avatar">
+                    <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Arjun Reddy">
+                </div>
+                <div class="judge-name">Arjun Reddy</div><br>
+                <div class="judge-role">Lead AI Engineer, Google</div>
+            </div>
+            <div class="judge-card hover-target">
+                <div class="judge-avatar">
+                    <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="Priya Sharma">
+                </div>
+                <div class="judge-name">Priya Sharma</div><br>
+                <div class="judge-role">Web3 Architect, Meta</div>
+            </div>
+            <div class="judge-card hover-target">
+                <div class="judge-avatar">
+                    <img src="https://randomuser.me/api/portraits/men/86.jpg" alt="Vikram Patel">
+                </div>
+                <div class="judge-name">Vikram Patel</div><br>
+                <div class="judge-role">Head of Security, Amazon</div>
+            </div>
+            <div class="judge-card hover-target">
+                <div class="judge-avatar">
+                    <img src="https://randomuser.me/api/portraits/women/68.jpg" alt="Neha Gupta">
+                </div>
+                <div class="judge-name">Neha Gupta</div><br>
+                <div class="judge-role">Core Developer, Microsoft</div>
+            </div>
+        </div>
+    </section>
+
+    <section id="sponsors">
+        <h2 class="sec-title hover-target">Network Sponsors</h2>
+        <p style="margin-bottom: 30px; color: #888;">Click to establish external data link.</p>
+        <div class="sponsor-grid">
+            <a href="https://www.microsoft.com/" target="_blank" class="sponsor-card hover-target play-sound">
+                <h3>MICROSOFT</h3>
+            </a>
+            <a href="https://about.google/" target="_blank" class="sponsor-card hover-target play-sound">
+                <h3>GOOGLE</h3>
+            </a>
+            <a href="https://www.apple.com/" target="_blank" class="sponsor-card hover-target play-sound">
+                <h3>APPLE</h3>
+            </a>
+            <a href="https://about.meta.com/" target="_blank" class="sponsor-card hover-target play-sound">
+                <h3>META</h3>
+            </a>
+            <a href="https://www.amazon.com/" target="_blank" class="sponsor-card hover-target play-sound">
+                <h3>AMAZON</h3>
+            </a>
+            <a href="https://www.netflix.com/" target="_blank" class="sponsor-card hover-target play-sound">
+                <h3>NETFLIX</h3>
+            </a>
+        </div>
+    </section>
+
+    <section id="location">
+        <h2 class="sec-title hover-target">Drop Zone</h2>
+        <div class="map-container">
+            <div class="map-info">
+                <h3 style="font-size: 2rem; color: var(--primary); margin-bottom: 10px;">Jadavpur University</h3>
+                <p style="color: #aaa; margin-bottom: 20px;">Coordinates: 22.4986° N, 88.3714° E<br>Access Level: Green (All Hackers)</p>
+                <a href="https://www.google.com/maps/search/Jadavpur+University" target="_blank" class="cy-btn magnetic play-sound hover-target">Get Coordinates</a>
+            </div>
+            
+            <div class="globe-wrapper hover-target" id="globe-container">
+                <div class="globe-hint">CLICK & DRAG TO ROTATE</div>
+            </div>
+        </div>
+    </section>
+
+    <section id="faq">
+        <h2 class="sec-title hover-target">Data Queries</h2>
+        <div class="faq-grid">
+            <div class="faq-item hover-target">
+                <div class="faq-q">Who can participate?</div>
+                <div class="faq-a">Any undergraduate or graduate student with a passion for coding. You don't need to be a Computer Science major to hack with us.</div>
+            </div>
+            <div class="faq-item hover-target">
+                <div class="faq-q">How much does it cost?</div>
+                <div class="faq-a">Zero. HackIE³ is completely free. We provide the food, swag, and Wi-Fi; you provide the code.</div>
+            </div>
+            <div class="faq-item hover-target">
+                <div class="faq-q">Do I need a team?</div>
+                <div class="faq-a">You can hack solo or in teams of up to 4. If you don't have a team, we have team-building events on Day 1 to help you find one!</div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="social-nodes">
+            <a href="#" class="play-sound hover-target">[ GitHub ]</a>
+            <a href="#" class="play-sound hover-target">[ Twitter ]</a>
+            <a href="#" class="play-sound hover-target">[ Discord ]</a>
+        </div>
+        <p class="footer-text hover-target">© 2026 HackIE³ by Apurba Samanta.</p>
+    </footer>
+
+    <div class="modal" id="terminalModal">
+        <div class="terminal">
+            <div class="term-header">
+                <span>admin@hackie3: ~/registration</span>
+                <span class="close-btn hover-target play-sound" onclick="closeTerminal()">[X] ABORT</span>
+            </div>
+            <div class="term-body" id="term-output">
+                </div>
+            <div class="input-line" id="term-input-container" style="display: none;">
+                <span>></span>
+                <form onsubmit="submitForm(event)" style="width: 100%;">
+                    <input type="text" class="term-input hover-target" id="t-input" placeholder="..." required autocomplete="off">
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+    <script>
+        // PRELOADER
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                const preloader = document.getElementById('preloader');
+                preloader.style.opacity = '0';
+                setTimeout(() => { preloader.style.display = 'none'; }, 500);
+            }, 1500);
+        });
+
+        // CUSTOM CURSOR
+        const dot = document.getElementById("cursor-dot");
+        const outline = document.getElementById("cursor-outline");
+        const hoverTargets = document.querySelectorAll(".hover-target");
+
+        window.addEventListener("mousemove", (e) => {
+            dot.style.left = `${e.clientX}px`;
+            dot.style.top = `${e.clientY}px`;
+            setTimeout(() => {
+                outline.style.left = `${e.clientX}px`;
+                outline.style.top = `${e.clientY}px`;
+            }, 50);
+        });
+
+        hoverTargets.forEach(target => {
+            target.addEventListener("mouseenter", () => outline.classList.add("hover"));
+            target.addEventListener("mouseleave", () => outline.classList.remove("hover"));
+        });
+
+        // EASTER EGG (HACK & UNHACK)
+        let keySequence = "";
+        let isOverclocked = false;
+
+        document.addEventListener('keydown', (e) => {
+            if (document.activeElement.tagName === 'INPUT') return;
+            keySequence += e.key.toLowerCase();
+            if (keySequence.length > 6) {
+                keySequence = keySequence.slice(-6);
+            }
+            if (keySequence.endsWith("unhack")) {
+                if (isOverclocked) deactivateOverclock();
+            } else if (keySequence.endsWith("hack")) {
+                if (!isOverclocked) activateOverclock();
+            }
+        });
+
+        function activateOverclock() {
+            isOverclocked = true;
+            document.body.classList.add('overclocked');
+            particleSpeedMult = 3; 
+            const msg = document.getElementById('overclock-msg');
+            msg.innerText = "SYSTEM OVERCLOCKED: MATRIX MODE ENGAGED";
+            msg.style.background = "#00ff00";
+            msg.classList.add('show');
+            setTimeout(() => msg.classList.remove('show'), 3000);
+            if(audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            osc.type = 'square';
+            osc.frequency.setValueAtTime(440, audioCtx.currentTime);
+            osc.frequency.setValueAtTime(880, audioCtx.currentTime + 0.1);
+            osc.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.2);
+        }
+
+        function deactivateOverclock() {
+            isOverclocked = false;
+            document.body.classList.remove('overclocked');
+            particleSpeedMult = 1; 
+            const msg = document.getElementById('overclock-msg');
+            msg.innerText = "SYSTEM RESTORED: STANDARD PROTOCOL ENGAGED";
+            msg.style.background = "var(--primary)"; 
+            msg.classList.add('show');
+            setTimeout(() => msg.classList.remove('show'), 3000);
+            if(audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            osc.type = 'square';
+            osc.frequency.setValueAtTime(880, audioCtx.currentTime); 
+            osc.frequency.setValueAtTime(440, audioCtx.currentTime + 0.1);
+            osc.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.2);
+        }
+
+        // WEB AUDIO API
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playHoverBeep() {
+            if(audioCtx.state === 'suspended') audioCtx.resume();
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(isOverclocked ? 1200 : 800, audioCtx.currentTime);
+            oscillator.frequency.exponentialRampToValueAtTime(isOverclocked ? 600 : 400, audioCtx.currentTime + 0.1);
+            gainNode.gain.setValueAtTime(0.05, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            oscillator.start();
+            oscillator.stop(audioCtx.currentTime + 0.1);
+        }
+        document.querySelectorAll('.play-sound').forEach(el => {
+            el.addEventListener('mouseenter', playHoverBeep);
+        });
+
+        // CANVAS PARTICLE NETWORK
+        const canvas = document.getElementById('network-canvas');
+        const ctx = canvas.getContext('2d');
+        let width, height, particles;
+        let particleSpeedMult = 1;
+
+        function initCanvas() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+            particles = [];
+            let count = window.innerWidth < 768 ? 40 : 100;
+            for(let i=0; i<count; i++) {
+                particles.push({
+                    x: Math.random() * width, y: Math.random() * height,
+                    vx: (Math.random() - 0.5) * 0.5, vy: (Math.random() - 0.5) * 0.5,
+                    radius: Math.random() * 2
+                });
+            }
+        }
+        
+        let mouse = { x: null, y: null };
+        window.addEventListener('mousemove', e => { mouse.x = e.clientX; mouse.y = e.clientY; });
+        window.addEventListener('mouseout', () => { mouse.x = null; mouse.y = null; });
+        window.addEventListener('resize', initCanvas);
+
+        function drawCanvas() {
+            ctx.clearRect(0, 0, width, height);
+            const particleColor = isOverclocked ? 'rgba(0, 255, 0, 0.5)' : 'rgba(0, 240, 255, 0.5)';
+            const lineColor = isOverclocked ? 'rgba(0, 255, 0, 0.1)' : 'rgba(0, 240, 255, 0.1)';
+            ctx.fillStyle = particleColor;
+            ctx.strokeStyle = lineColor;
+            
+            for(let i=0; i<particles.length; i++) {
+                let p = particles[i];
+                p.x += p.vx * particleSpeedMult; 
+                p.y += p.vy * particleSpeedMult;
+                
+                if(p.x < 0 || p.x > width) p.vx *= -1;
+                if(p.y < 0 || p.y > height) p.vy *= -1;
+
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                ctx.fill();
+
+                if(mouse.x != null) {
+                    let dx = mouse.x - p.x; let dy = mouse.y - p.y;
+                    let dist = Math.sqrt(dx*dx + dy*dy);
+                    if(dist < 150) {
+                        ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(mouse.x, mouse.y); ctx.stroke();
+                    }
+                }
+                for(let j=i+1; j<particles.length; j++) {
+                    let p2 = particles[j];
+                    let dx = p.x - p2.x; let dy = p.y - p2.y;
+                    let dist = Math.sqrt(dx*dx + dy*dy);
+                    if(dist < 100) {
+                        ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p2.x, p2.y); ctx.stroke();
+                    }
+                }
+            }
+            requestAnimationFrame(drawCanvas);
+        }
+        initCanvas(); drawCanvas();
+
+        // MAGNETIC BUTTONS
+        const magnets = document.querySelectorAll('.magnetic');
+        magnets.forEach(btn => {
+            btn.addEventListener('mousemove', function(e) {
+                const pos = this.getBoundingClientRect();
+                const x = e.clientX - pos.left - pos.width / 2;
+                const y = e.clientY - pos.top - pos.height / 2;
+                this.style.transform = `translate(${x * 0.3}px, ${y * 0.3}px) scale(1.05)`;
+            });
+            btn.addEventListener('mouseleave', function() {
+                this.style.transform = 'translate(0px, 0px) scale(1)';
+            });
+        });
+
+        // SCROLL ANIMATION (Timeline)
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if(entry.isIntersecting) { entry.target.classList.add('visible'); }
+            });
+        }, { threshold: 0.2 });
+        document.querySelectorAll('.tl-item').forEach(el => observer.observe(el));
+
+        // DYNAMIC STATS COUNTER
+        const statNums = document.querySelectorAll('.stat-num');
+        let statsStarted = false;
+        const statsObserver = new IntersectionObserver((entries) => {
+            if(entries[0].isIntersecting && !statsStarted) {
+                statsStarted = true;
+                statNums.forEach(stat => {
+                    const target = +stat.getAttribute('data-target');
+                    const duration = 2000;
+                    const increment = target / (duration / 16);
+                    let current = 0;
+                    const updateStat = () => {
+                        current += increment;
+                        if(current < target) {
+                            stat.innerText = Math.ceil(current).toLocaleString('en-IN');
+                            requestAnimationFrame(updateStat);
+                        } else {
+                            stat.innerText = target.toLocaleString('en-IN');
+                        }
+                    };
+                    updateStat();
+                });
+            }
+        }, { threshold: 0.5 });
+        const statsSection = document.getElementById('stats');
+        if(statsSection) statsObserver.observe(statsSection);
+
+        // FAQ ACCORDION
+        const faqItems = document.querySelectorAll('.faq-item');
+        faqItems.forEach(item => {
+            item.querySelector('.faq-q').addEventListener('click', () => {
+                const isActive = item.classList.contains('active');
+                faqItems.forEach(i => i.classList.remove('active'));
+                if(!isActive) item.classList.add('active');
+            });
+        });
+
+        // MATCHMAKING TERMINAL LOGIC
+        const modal = document.getElementById('terminalModal');
+        const output = document.getElementById('term-output');
+        const inputCont = document.getElementById('term-input-container');
+        const tInput = document.getElementById('t-input');
+        let typeSpeed = 30;
+        let termState = 0; 
+
+        function initTerminal() {
+            modal.classList.add('active');
+            output.innerHTML = '';
+            inputCont.style.display = 'none';
+            termState = 0;
+            tInput.type = 'email';
+            tInput.placeholder = "Enter valid email to request access key...";
+            tInput.value = '';
+            
+            const text = [
+                "Establishing secure connection to HackIE³ mainframe...",
+                "Bypassing proxy node 1...",
+                "Connection established.",
+                "Execute registration protocol? (Y/N): Auto-Execution engaged.",
+                "Please authenticate identity below."
+            ];
+            
+            let lineIndex = 0;
+            let charIndex = 0;
+            function typeLine() {
+                if(lineIndex < text.length) {
+                    if(charIndex < text[lineIndex].length) {
+                        if(charIndex === 0) output.innerHTML += '<br>> ';
+                        output.innerHTML += text[lineIndex].charAt(charIndex);
+                        charIndex++;
+                        setTimeout(typeLine, typeSpeed);
+                    } else {
+                        lineIndex++;
+                        charIndex = 0;
+                        setTimeout(typeLine, 150);
+                    }
+                } else {
+                    inputCont.style.display = 'flex';
+                    tInput.focus();
+                }
+            }
+            setTimeout(typeLine, 400);
+        }
+
+        function closeTerminal() { modal.classList.remove('active'); }
+
+        function submitForm(e) {
+            e.preventDefault();
+            const inputVal = tInput.value;
+            
+            if(termState === 0) {
+                inputCont.style.display = 'none';
+                output.innerHTML += `<br>> ${inputVal}`;
+                output.innerHTML += `<br><span style="color:var(--secondary)">> Authenticated.</span>`;
+                
+                setTimeout(() => {
+                    output.innerHTML += `<br><br>> Team Status Verification Required.`;
+                    output.innerHTML += `<br>> Enter [SOLO] for matchmaking or [SQUAD] if team established.`;
+                    tInput.type = 'text';
+                    tInput.value = '';
+                    tInput.placeholder = "Type SOLO or SQUAD...";
+                    inputCont.style.display = 'flex';
+                    tInput.focus();
+                    termState = 1;
+                }, 800);
+                
+            } else if (termState === 1) {
+                const val = inputVal.toUpperCase();
+                if(val === 'SOLO' || val === 'SQUAD') {
+                    inputCont.style.display = 'none';
+                    output.innerHTML += `<br>> ${val}`;
+                    
+                    setTimeout(() => {
+                        if(val === 'SOLO') {
+                            output.innerHTML += `<br><span style="color:var(--primary)">> LONE WOLF DETECTED. Routing to matchmaking server...</span>`;
+                            setTimeout(() => {
+                                window.open('https://discord.com', '_blank');
+                                closeTerminal();
+                            }, 2000);
+                        } else {
+                            output.innerHTML += `<br><span style="color:#00ff00">> SQUAD DETECTED. ACCESS GRANTED. CREDENTIALS SENT TO INBOX.</span>`;
+                            setTimeout(() => { closeTerminal(); }, 2000);
+                        }
+                    }, 800);
+                } else {
+                    tInput.value = '';
+                    tInput.placeholder = "Invalid. Type SOLO or SQUAD...";
+                }
+            }
+        }
+
+        // LIVE COUNTDOWN LOGIC (Target: June 5, 2026, 12:00:00)
+        const targetDate = new Date("June 5, 2026 12:00:00").getTime();
+        const countdownInterval = setInterval(() => {
+            const now = new Date().getTime();
+            const distance = targetDate - now;
+            if (distance < 0) {
+                clearInterval(countdownInterval);
+                document.getElementById("cd-days").innerText = "00";
+                document.getElementById("cd-hours").innerText = "00";
+                document.getElementById("cd-mins").innerText = "00";
+                document.getElementById("cd-secs").innerText = "00";
+                return;
+            }
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+            document.getElementById("cd-days").innerText = days.toString().padStart(2, '0');
+            document.getElementById("cd-hours").innerText = hours.toString().padStart(2, '0');
+            document.getElementById("cd-mins").innerText = minutes.toString().padStart(2, '0');
+            document.getElementById("cd-secs").innerText = seconds.toString().padStart(2, '0');
+        }, 1000);
+
+        // REAL 3D EARTH MODEL (Three.js) WITH REALISTIC AXIAL TILT
+        const globeContainer = document.getElementById('globe-container');
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+        
+        renderer.setSize(350, 350);
+        globeContainer.innerHTML = ''; 
+        globeContainer.appendChild(renderer.domElement);
+        
+        const hint = document.createElement('div');
+        hint.className = 'globe-hint';
+        hint.innerText = 'CLICK & DRAG TO ROTATE';
+        globeContainer.appendChild(hint);
+
+        const earthGeo = new THREE.SphereGeometry(5, 50, 50);
+        const textureLoader = new THREE.TextureLoader();
+        const earthMat = new THREE.MeshStandardMaterial({
+            map: textureLoader.load('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg'),
+            roughness: 0.8,
+            metalness: 0.2
+        });
+        const earth = new THREE.Mesh(earthGeo, earthMat);
+        
+        // Realistic Earth Axial Tilt (23.5 degrees)
+        earth.rotation.z = 23.5 * Math.PI / 180;
+        scene.add(earth);
+
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+        scene.add(ambientLight);
+        const pointLight = new THREE.PointLight(0x00f0ff, 1.5, 50);
+        pointLight.position.set(10, 10, 10);
+        scene.add(pointLight);
+
+        function calcPosFromLatLonRad(lat, lon, radius) {
+            var phi = (90 - lat) * (Math.PI / 180);
+            var theta = (lon + 180) * (Math.PI / 180);
+            return {
+                x: -(radius * Math.sin(phi) * Math.cos(theta)),
+                z: (radius * Math.sin(phi) * Math.sin(theta)),
+                y: (radius * Math.cos(phi))
+            };
+        }
+        
+        const markerPos = calcPosFromLatLonRad(22.4986, 88.3714, 5.05);
+
+        const markerGeo = new THREE.SphereGeometry(0.12, 16, 16);
+        const markerMat = new THREE.MeshBasicMaterial({ color: 0xff0055 });
+        const marker = new THREE.Mesh(markerGeo, markerMat);
+        marker.position.set(markerPos.x, markerPos.y, markerPos.z);
+        earth.add(marker);
+
+        const glowGeo = new THREE.SphereGeometry(0.25, 16, 16);
+        const glowMat = new THREE.MeshBasicMaterial({ color: 0xff0055, transparent: true, opacity: 0.6 });
+        const glow = new THREE.Mesh(glowGeo, glowMat);
+        marker.add(glow);
+
+        camera.position.z = 15;
+
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableZoom = false;
+        controls.enablePan = false;
+        controls.autoRotate = false; // Turned off camera rotation to let the earth spin on its own axis
+
+        let clock = new THREE.Clock();
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            
+            // True planetary rotation on its tilted axis
+            earth.rotation.y += 0.005;
+
+            let t = clock.getElapsedTime();
+            glow.scale.setScalar(1 + 0.4 * Math.sin(t * 4));
+            glow.material.opacity = 0.6 + 0.2 * Math.sin(t * 4);
+            renderer.render(scene, camera);
+        }
+        animate();
+    </script>
+</body>
+</html>
