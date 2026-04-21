@@ -1,54 +1,46 @@
-# ⚡ HACK_IE³ | System Override
+# 💻 HackIE³ | System Override
 
-**HACK_IE³** is a premier 48-hour neural dive into the future of decentralized tech, AI, and systems architecture. Hosted at **Jadavpur University**, this event challenges developers to break boundaries and code the impossible.
+> *A 48-hour neural dive into the future of decentralized tech, AI, and systems architecture. No limits. No boundaries. Code the impossible.*
 
----
+HackIE³ is a fully immersive, interactive, and highly optimized cyberpunk-themed hackathon landing page. Built entirely with Vanilla HTML, CSS, and JavaScript in a single file, it features 3D rendering, a custom audio engine, particle networks, and hidden terminal easter eggs.
 
-## 🚀 Key Features
+## ✨ Features
 
-* **3D Holographic Interface:** Interactive 3D carousel for project tracks orbiting a central node.
-* **Realistic Planetary Engine:** A scientifically accurate 23.5° axial-tilted Earth model using Three.js.
-* **System Overclock (Easter Egg):** Type `hack` anywhere on the site to trigger "Matrix Mode." Type `unhack` to restore standard protocols.
-* **Dynamic Stats:** Real-time counting of hackers, hours, and bounties.
-* **Interactive Terminal:** A custom-built registration terminal with state-machine logic for team matchmaking.
+**Visual & UI Engineering**
+* **Immersive Preloader:** Sequential boot-up screen simulating a mainframe connection.
+* **Interactive 3D Globe:** Built with `Three.js`, featuring an additive-blend atmosphere, a custom marker for Jadavpur University, and a wireframe fallback.
+* **Canvas Particle Network:** A dynamic, physics-based background network that reacts to cursor proximity.
+* **Cyberpunk Aesthetics:** CRT scanline overlays, glowing neon section dividers, glitch-text animations, and a responsive scroll-progress bar.
+* **3D Tilt Mechanics:** Hover-responsive 3D tilt effects on Bounty and Judge cards.
+* **Magnetic Elements:** Navigation links and buttons that magnetically pull toward the user's cursor.
 
----
+**Interactive Systems**
+* **Matchmaking Terminal:** A functional, simulated command-line modal for "registration." Includes email regex validation, scrolling text generation, and interactive prompts (SOLO vs SQUAD).
+* **Time-Aware Schedule:** The timeline reads the system clock to automatically highlight the currently "LIVE" event with glowing badges and grays out past events.
+* **Live Countdown:** Real-time countdown ticking down to the system start (June 5, 2026).
 
-## 🏆 System Bounties (₹1,75,000 Pool)
+**Audio Engine**
+* **Web Audio API Integration:** Synthesized, dynamic hover beeps that change pitch based on the system state.
+* **Ambient Server Drone:** A toggleable, low-frequency synthetic ambient background drone that mimics the hum of a server room.
 
-* 👑 **Global First Place:** ₹1,00,000
-* 🛠️ **Best Deep Tech:** ₹50,000
-* 🎨 **Best UI/UX Node:** ₹25,000
+**Accessibility (a11y)**
+* Fully responsive design (Mobile, Tablet, Desktop).
+* Respects `@media (prefers-reduced-motion: reduce)` by disabling heavy animations, 3D renders, and flashing lights for sensitive users.
+* Includes ARIA labels, semantic HTML, and a "Skip to main content" link for screen readers.
 
----
+## 🕵️‍♂️ Hidden Easter Eggs
 
-## 📂 System Directives (Tracks)
+Try these out when you load the page:
+1. **Matrix Overclock Mode:** Type `hack` anywhere on your keyboard. The system will "overclock," turning the UI green, speeding up the particle network, and changing the audio pitch. Type `unhack` to revert to the standard protocol.
+2. **Terminal Defiance:** Open the Connect terminal and type `sudo` to see what happens.
+3. **Clear Terminal:** Type `clear` in the terminal to wipe the logs.
 
-1.  **AI & Neural Nets:** Building the agents of tomorrow.
-2.  **Web3 & DeFi:** Decentralizing digital ownership.
-3.  **Cyber-Security:** Defending the grid.
-4.  **Autonomous Robotics:** Hardware and vision-guided systems.
-5.  **Open Innovation:** No limits, any stack.
+## 🛠 Tech Stack
 
----
-
-## 👨‍💻 Tech Stack
-
-* **Frontend:** HTML5, CSS3 (Custom 3D Transforms)
-* **Graphics:** [Three.js](https://threejs.org/) for the 3D Earth.
-* **Audio:** Web Audio API for feedback beeps.
-* **Deployment:** GitHub Pages.
-
----
-
-## 🤖 AI Integration (Neural Contributions)
-
-This mainframe was architected and optimized using advanced Neural Networks. The following AI workflows were utilized:
-
-* **Logic & Architecture:** Core system architecture, state-machine terminal logic, and 3D coordinate math provided by *Gemini 1.5 Pro*.
-* **Visual Assets:**
-  * **AI Portraits:** Diverse judge avatars generated using synthetic datasets to represent the global tech landscape.
-  * **Neural Overclock:** Creative conceptualization of the "Matrix Mode" and theme shifting logic.
-  * **Dynamic Solutions:** Implementation of the 3D Holographic Carousel and the scientifically accurate axial-tilted Earth engine via                               natural language prototyping.
+* **Structure:** HTML5
+* **Styling:** Pure CSS3 (Custom properties, Keyframe animations, CSS Grid/Flexbox)
+* **Logic:** Vanilla JavaScript (ES6+)
+* **3D Library:** [Three.js](https://threejs.org/) (via CDN)
+* **Fonts:** Google Fonts ('Orbitron' & 'Share Tech Mono')
 
 
