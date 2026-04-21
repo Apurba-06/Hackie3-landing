@@ -3,7 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <meta name="description" content="HackIE³ - A 48-hour neural dive into the future of decentralized tech, AI, and systems architecture.">
+    <meta property="og:title" content="HackIE³ | System Override">
+    <meta property="og:description" content="Code the impossible. A 48-hour decentralized tech & AI hackathon.">
+    <meta property="og:type" content="website">
+    <meta name="theme-color" content="#020204">
+
     <title>HackIE³ | System Override</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+
     <style>
         /* CORE VARIABLES & RESET */
         :root {
@@ -12,7 +24,8 @@
             --primary: #00f0ff;
             --secondary: #ff0055;
             --text: #e0e0ff;
-            --font-main: 'Courier New', Courier, monospace;
+            --font-main: 'Share Tech Mono', 'Courier New', Courier, monospace;
+            --font-display: 'Orbitron', sans-serif;
         }
         
         /* OVERCLOCK MODE VARIABLES */
@@ -25,6 +38,24 @@
         * { margin: 0; padding: 0; box-sizing: border-box; cursor: none !important; }
         body { background: var(--base); color: var(--text); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; overflow-x: hidden; scroll-behavior: smooth; transition: --primary 0.5s, --secondary 0.5s; }
         
+        /* ACCESSIBILITY: SKIP LINK */
+        .skip-link {
+            position: absolute; top: -40px; left: 0; background: var(--primary); color: var(--base); padding: 8px; z-index: 10000; font-family: var(--font-main); font-weight: bold; transition: top 0.2s; text-decoration: none;
+        }
+        .skip-link:focus { top: 0; }
+
+        /* SCROLL PROGRESS BAR */
+        #scroll-progress {
+            position: fixed; top: 0; left: 0; width: 0%; height: 3px; background: var(--primary); z-index: 10001; box-shadow: 0 0 10px var(--primary); transition: width 0.1s;
+        }
+
+        /* CRT SCANLINE OVERLAY */
+        .crt-overlay {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 9997;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            background-size: 100% 4px, 3px 100%; opacity: 0.4;
+        }
+
         /* CUSTOM SCROLLBAR */
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: var(--base); }
@@ -38,10 +69,10 @@
         body.overclocked .cursor-outline.hover { background-color: rgba(0, 255, 0, 0.1); }
 
         /* PRELOADER */
-        #preloader { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: var(--base); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; font-family: var(--font-main); color: var(--primary); transition: opacity 0.5s ease; }
-        .loader-text { font-size: 1.5rem; margin-bottom: 20px; text-shadow: 0 0 10px var(--primary); }
+        #preloader { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: var(--base); z-index: 10000; display: flex; flex-direction: column; justify-content: center; align-items: center; font-family: var(--font-main); color: var(--primary); transition: opacity 0.5s ease; }
+        .loader-text { font-size: 1.2rem; margin-bottom: 20px; text-shadow: 0 0 10px var(--primary); min-height: 2rem; text-align: center;}
         .loader-bar { width: 300px; height: 2px; background: rgba(0,240,255,0.2); position: relative; overflow: hidden; }
-        .loader-bar::after { content: ''; position: absolute; top: 0; left: -50%; width: 50%; height: 100%; background: var(--primary); box-shadow: 0 0 10px var(--primary); animation: load 1.5s ease-in-out forwards; }
+        .loader-bar::after { content: ''; position: absolute; top: 0; left: -50%; width: 50%; height: 100%; background: var(--primary); box-shadow: 0 0 10px var(--primary); animation: load 2s ease-in-out infinite; }
         @keyframes load { 0% { left: -50%; } 100% { left: 100%; } }
 
         /* FULLSCREEN CANVAS BACKGROUND */
@@ -50,71 +81,80 @@
 
         /* CYBERPUNK NAV */
         nav { position: fixed; top: 0; width: 100%; padding: 20px 5%; display: flex; justify-content: space-between; align-items: center; z-index: 100; background: linear-gradient(180deg, rgba(2,2,4,0.9) 0%, transparent 100%); backdrop-filter: blur(5px); }
-        .logo { font-family: var(--font-main); font-size: 24px; font-weight: 900; color: var(--text); text-shadow: 0 0 10px var(--primary); letter-spacing: 2px; }
-        .nav-links a { color: var(--text); text-decoration: none; margin-left: 30px; font-size: 14px; text-transform: uppercase; letter-spacing: 2px; transition: 0.3s; }
+        .logo { font-family: var(--font-display); font-size: 24px; font-weight: 900; color: var(--text); text-shadow: 0 0 10px var(--primary); letter-spacing: 2px; text-transform: uppercase;}
+        
+        .nav-links { display: flex; align-items: center; transition: all 0.3s ease; }
+        .nav-links a { color: var(--text); text-decoration: none; margin-left: 30px; font-size: 14px; text-transform: uppercase; letter-spacing: 2px; font-family: var(--font-main); transition: 0.3s; position: relative;}
+        .nav-links a::after { content: ''; position: absolute; width: 0; height: 2px; bottom: -5px; left: 0; background-color: var(--primary); transition: 0.3s; box-shadow: 0 0 8px var(--primary); }
         .nav-links a:hover { color: var(--primary); text-shadow: 0 0 8px var(--primary); }
+        .nav-links a:hover::after, .nav-links a.active::after { width: 100%; }
+        .nav-links a.active { color: var(--primary); text-shadow: 0 0 8px var(--primary); }
+
+        /* HAMBURGER MENU */
+        .hamburger { display: none; flex-direction: column; cursor: pointer; gap: 5px; z-index: 101; padding: 10px; }
+        .hamburger span { width: 25px; height: 3px; background-color: var(--primary); transition: 0.3s; box-shadow: 0 0 5px var(--primary); }
+        .hamburger.active span:nth-child(1) { transform: translateY(8px) rotate(45deg); }
+        .hamburger.active span:nth-child(2) { opacity: 0; }
+        .hamburger.active span:nth-child(3) { transform: translateY(-8px) rotate(-45deg); }
+
         .cy-btn { background: transparent; color: var(--primary); border: 1px solid var(--primary); padding: 12px 25px; font-family: var(--font-main); font-weight: bold; text-transform: uppercase; letter-spacing: 2px; clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px); position: relative; transition: 0.2s; display: inline-block; text-align: center; margin-left: 20px; text-decoration: none;}
         .cy-btn:hover { background: var(--primary); color: var(--base); box-shadow: 0 0 20px var(--primary); transform: scale(1.05); }
 
         /* HERO & GLITCH EFFECT */
         header { height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; padding: 0 10%; position: relative; }
-        .glitch { font-size: clamp(4rem, 8vw, 8rem); font-weight: 900; line-height: 1; text-transform: uppercase; position: relative; color: var(--text); margin-bottom: 20px; }
-        .glitch::before, .glitch::after { content: attr(data-text); position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0.8; }
+        .glitch { font-family: var(--font-display); font-size: clamp(4rem, 8vw, 8rem); font-weight: 900; line-height: 1; text-transform: uppercase; position: relative; color: var(--text); margin-bottom: 20px; }
+        .glitch::before, .glitch::after { content: attr(data-text); position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0.8; pointer-events: none;}
         .glitch::before { color: var(--primary); z-index: -1; animation: glitch-anim-1 2s infinite linear alternate-reverse; }
         .glitch::after { color: var(--secondary); z-index: -2; animation: glitch-anim-2 3s infinite linear alternate-reverse; }
         @keyframes glitch-anim-1 { 0% { clip-path: inset(20% 0 80% 0); transform: translate(-2px, 1px); } 20% { clip-path: inset(60% 0 10% 0); transform: translate(2px, -1px); } 40% { clip-path: inset(40% 0 50% 0); transform: translate(-2px, 2px); } 60% { clip-path: inset(80% 0 5% 0); transform: translate(2px, -2px); } 80% { clip-path: inset(10% 0 70% 0); transform: translate(-1px, 1px); } 100% { clip-path: inset(30% 0 50% 0); transform: translate(1px, -1px); } }
         @keyframes glitch-anim-2 { 0% { clip-path: inset(10% 0 60% 0); transform: translate(2px, -1px); } 20% { clip-path: inset(30% 0 20% 0); transform: translate(-2px, 1px); } 40% { clip-path: inset(70% 0 10% 0); transform: translate(2px, -2px); } 60% { clip-path: inset(20% 0 50% 0); transform: translate(-2px, 2px); } 80% { clip-path: inset(50% 0 30% 0); transform: translate(1px, -1px); } 100% { clip-path: inset(5% 0 80% 0); transform: translate(-1px, 1px); } }
-        header p { font-size: 1.2rem; max-width: 600px; margin-bottom: 30px; color: #aaa; border-left: 3px solid var(--primary); padding-left: 15px; }
+        
+        .hero-subtitle { font-family: var(--font-main); font-size: 1.2rem; min-height: 1.5rem; max-width: 600px; margin-bottom: 30px; color: #aaa; border-left: 3px solid var(--primary); padding-left: 15px; }
+        .cursor-blink { display: inline-block; width: 10px; height: 1.2rem; background-color: var(--primary); vertical-align: middle; animation: blink 1s step-end infinite; }
+        @keyframes blink { 50% { opacity: 0; } }
 
         /* LIVE COUNTDOWN TIMER */
         .countdown { display: flex; gap: 15px; margin-bottom: 40px; flex-wrap: wrap; }
         .time-box { background: rgba(0, 240, 255, 0.05); border: 1px solid var(--primary); padding: 15px 20px; text-align: center; min-width: 90px; box-shadow: inset 0 0 15px rgba(0,240,255,0.1); border-radius: 4px; backdrop-filter: blur(5px); }
         body.overclocked .time-box { background: rgba(0, 255, 0, 0.05); box-shadow: inset 0 0 15px rgba(0,255,0,0.1); }
         .time-val { font-size: 2.5rem; font-family: var(--font-main); font-weight: bold; color: var(--text); text-shadow: 0 0 15px var(--primary); display: block; line-height: 1; margin-bottom: 5px; }
-        .time-label { font-size: 0.75rem; color: var(--secondary); text-transform: uppercase; letter-spacing: 2px; font-weight: bold; }
+        .time-label { font-size: 0.75rem; color: var(--secondary); text-transform: uppercase; letter-spacing: 2px; font-weight: bold; font-family: var(--font-display);}
 
-        /* SECTIONS & TYPOGRAPHY */
-        section { padding: 100px 10%; position: relative; z-index: 10; border-top: 1px solid rgba(0,240,255,0.1); background: transparent; }
-        .sec-title { font-size: 3rem; text-transform: uppercase; margin-bottom: 60px; display: inline-block; border-bottom: 2px solid var(--secondary); padding-bottom: 10px; }
+        /* SECTIONS & TYPOGRAPHY - Added Glowing Dividers & Anim Classes */
+        section { padding: 100px 10%; position: relative; z-index: 10; border-top: 1px solid rgba(0,240,255,0.2); background: transparent; box-shadow: inset 0 20px 50px -20px rgba(0,240,255,0.05); }
+        .sec-title { font-family: var(--font-display); font-size: 3rem; text-transform: uppercase; margin-bottom: 60px; display: inline-block; border-bottom: 2px solid var(--secondary); padding-bottom: 10px; }
+        
+        .fade-in-section { opacity: 0; transform: translateY(40px); transition: opacity 0.8s ease-out, transform 0.8s ease-out; will-change: opacity, visibility; }
+        .fade-in-section.is-visible { opacity: 1; transform: none; }
 
         /* DYNAMIC STATS SECTION */
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 30px; text-align: center; background: rgba(10, 11, 16, 0.6); backdrop-filter: blur(10px); padding: 50px; border-radius: 8px; border: 1px solid rgba(0,240,255,0.1); box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
         .stat-box { white-space: nowrap; }
         .stat-num { font-size: 4rem; font-family: var(--font-main); font-weight: 900; color: var(--primary); text-shadow: 0 0 20px var(--primary); display: inline-block; }
         .stat-prefix, .stat-plus { font-size: 3rem; color: var(--primary); font-family: var(--font-main); font-weight: bold; }
-        .stat-label { font-size: 1.2rem; color: #aaa; text-transform: uppercase; letter-spacing: 2px; margin-top: 10px; display: block; white-space: normal; }
+        .stat-label { font-size: 1.2rem; color: #aaa; text-transform: uppercase; letter-spacing: 2px; margin-top: 10px; display: block; white-space: normal; font-family: var(--font-display);}
 
-        /* 3D ROTATING CHALLENGE TRACKS - BACKFACE HIDDEN */
+        /* 3D ROTATING CHALLENGE TRACKS */
         .carousel-container { perspective: 1200px; perspective-origin: 50% 10%; width: 100%; height: 500px; display: flex; justify-content: center; align-items: center; position: relative; margin-top: 40px; }
-        
         .carousel { position: absolute; width: 300px; height: 250px; transform-style: preserve-3d; animation: rotateCarousel 25s linear infinite; z-index: 1; display: flex; justify-content: center; align-items: center; }
         .carousel:hover { animation-play-state: paused; }
         
         .track-card { 
             position: absolute; width: 300px; background: rgba(10, 11, 16, 0.95); backdrop-filter: blur(10px); 
             border: 1px solid rgba(0,240,255,0.3); padding: 30px; border-radius: 8px; text-decoration: none; 
-            color: inherit; transition: 0.3s; 
-            transform: rotateY(calc(var(--i) * 72deg)) translateZ(380px); 
+            color: inherit; transition: 0.3s; transform: rotateY(calc(var(--i) * 72deg)) translateZ(380px); 
             box-shadow: inset 0 0 20px rgba(0,240,255,0.05), 0 10px 30px rgba(0,0,0,0.8); 
-            
-            /* Hides the card completely when it rotates to the back of the carousel */
-            backface-visibility: hidden;
-            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden; -webkit-backface-visibility: hidden;
         }
-        
         .track-card::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: var(--secondary); transition: 0.4s; }
         .track-card:hover { border-color: var(--primary); box-shadow: inset 0 0 40px rgba(0,240,255,0.1), 0 0 30px rgba(0,240,255,0.3); }
         .track-card:hover::before { width: 100%; opacity: 0.15; background: var(--primary); }
         
-        .track-title { font-size: 1.4rem; color: var(--text); margin-bottom: 15px; font-weight: bold; letter-spacing: 1px; }
+        .track-title { font-family: var(--font-main); font-size: 1.4rem; color: var(--text); margin-bottom: 15px; font-weight: bold; letter-spacing: 1px; }
         .track-desc { color: #aaa; line-height: 1.6; font-size: 0.9rem; margin-bottom: 15px; }
         .track-explore { font-family: var(--font-main); font-size: 0.8rem; color: var(--primary); opacity: 0; transition: 0.3s; transform: translateX(-10px); display: block; font-weight: bold;}
         .track-card:hover .track-explore { opacity: 1; transform: translateX(0); }
-        
-        @keyframes rotateCarousel {
-            0% { transform: rotateY(0deg); }
-            100% { transform: rotateY(-360deg); }
-        }
+        @keyframes rotateCarousel { 0% { transform: rotateY(0deg); } 100% { transform: rotateY(-360deg); } }
 
         /* TIMELINE SCHEDULE */
         .timeline { position: relative; max-width: 800px; margin: 0 auto; }
@@ -124,42 +164,39 @@
         .tl-item::before { content: ''; position: absolute; left: 14px; top: 5px; width: 14px; height: 14px; background: var(--base); border: 2px solid var(--primary); border-radius: 50%; box-shadow: 0 0 10px var(--primary); transition: 0.3s; }
         .tl-item:hover::before { background: var(--primary); transform: scale(1.5); }
         .tl-time { font-family: var(--font-main); color: var(--primary); font-size: 1.2rem; font-weight: bold; margin-bottom: 5px; display: block; }
-        .tl-content { background: rgba(10, 11, 16, 0.8); backdrop-filter: blur(5px); padding: 20px; border: 1px solid rgba(255,255,255,0.05); border-radius: 5px; }
+        .tl-content { background: rgba(10, 11, 16, 0.8); backdrop-filter: blur(5px); padding: 20px; border: 1px solid rgba(255,255,255,0.05); border-radius: 5px; font-family: var(--font-main);}
 
-        /* PRIZES / BOUNTY BOARD */
-        .prize-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 30px; }
-        .prize-card { background: rgba(10, 11, 16, 0.8); backdrop-filter: blur(5px); border: 1px solid rgba(255,0,85,0.3); padding: 40px 20px; text-align: center; position: relative; overflow: hidden; transition: 0.4s; border-radius: 4px; }
-        .prize-card:hover { border-color: var(--secondary); box-shadow: 0 0 30px rgba(255,0,85,0.15); transform: translateY(-5px); }
-        .prize-rank { font-size: 1.2rem; color: var(--text); margin-bottom: 15px; font-weight: bold; text-transform: uppercase; letter-spacing: 2px; }
-        .prize-amount { font-family: var(--font-main); font-size: clamp(2rem, 6vw, 2.8rem); color: var(--secondary); text-shadow: 0 0 15px var(--secondary); margin-bottom: 15px; line-height: 1; font-weight: bold; }
-        .prize-desc { color: #aaa; font-size: 0.95rem; line-height: 1.5; }
-        .prize-card.grand { border-color: var(--primary); box-shadow: 0 0 20px rgba(0,240,255,0.1); transform: scale(1.05); z-index: 2; }
-        .prize-card.grand:hover { border-color: var(--primary); box-shadow: 0 0 40px rgba(0,240,255,0.3); transform: scale(1.05) translateY(-5px); }
+        /* PRIZES / BOUNTY BOARD (Added 3D Tilt Class logic to JS) */
+        .prize-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 30px; perspective: 1000px;}
+        .prize-card { background: rgba(10, 11, 16, 0.8); backdrop-filter: blur(5px); border: 1px solid rgba(255,0,85,0.3); padding: 40px 20px; text-align: center; position: relative; overflow: hidden; border-radius: 4px; transform-style: preserve-3d; transition: border-color 0.4s, box-shadow 0.4s; will-change: transform;}
+        .prize-card:hover { border-color: var(--secondary); box-shadow: 0 0 30px rgba(255,0,85,0.15); }
+        .prize-rank { font-size: 1.2rem; color: var(--text); margin-bottom: 15px; font-weight: bold; text-transform: uppercase; letter-spacing: 2px; font-family: var(--font-display); transform: translateZ(30px);}
+        .prize-amount { font-family: var(--font-main); font-size: clamp(2rem, 6vw, 2.8rem); color: var(--secondary); text-shadow: 0 0 15px var(--secondary); margin-bottom: 15px; line-height: 1; font-weight: bold; transform: translateZ(50px);}
+        .prize-desc { color: #aaa; font-size: 0.95rem; line-height: 1.5; transform: translateZ(20px);}
+        
+        .prize-card.grand { border-color: var(--primary); box-shadow: 0 0 20px rgba(0,240,255,0.1); z-index: 2; }
+        .prize-card.grand:hover { border-color: var(--primary); box-shadow: 0 0 40px rgba(0,240,255,0.3); }
         .prize-card.grand .prize-amount { color: var(--primary); text-shadow: 0 0 20px var(--primary); font-size: clamp(2.4rem, 7vw, 3.4rem); }
-        .prize-card.grand::before { content: 'SYSTEM OVERLORD'; position: absolute; top: 10px; right: -30px; background: var(--primary); color: var(--base); font-size: 0.7rem; font-weight: bold; padding: 5px 30px; transform: rotate(45deg); letter-spacing: 1px; }
+        .prize-card.grand::before { content: 'SYSTEM OVERLORD'; position: absolute; top: 10px; right: -30px; background: var(--primary); color: var(--base); font-size: 0.7rem; font-weight: bold; padding: 5px 30px; transform: rotate(45deg); letter-spacing: 1px; font-family: var(--font-main);}
 
         /* THE OVERSEERS (JUDGES) */
-        .judge-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 30px; }
-        .judge-card { border: 1px solid rgba(0,240,255,0.1); padding: 30px; text-align: center; transition: 0.4s; border-radius: 4px; position: relative; overflow: hidden; background: rgba(10, 11, 16, 0.8); backdrop-filter: blur(5px);}
-        .judge-card:hover { border-color: var(--primary); box-shadow: 0 0 20px rgba(0,240,255,0.15); transform: translateY(-5px); }
-        
-        .judge-avatar { width: 120px; height: 120px; margin: 0 auto 20px; border-radius: 50%; border: 2px solid rgba(0,240,255,0.2); filter: blur(3px) grayscale(100%); transition: 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275); position: relative; overflow: hidden; z-index: 2; }
+        .judge-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 30px; perspective: 1000px;}
+        .judge-card { border: 1px solid rgba(0,240,255,0.1); padding: 30px; text-align: center; border-radius: 4px; position: relative; background: rgba(10, 11, 16, 0.8); backdrop-filter: blur(5px); transform-style: preserve-3d; transition: border-color 0.4s, box-shadow 0.4s; will-change: transform;}
+        .judge-card:hover { border-color: var(--primary); box-shadow: 0 0 20px rgba(0,240,255,0.15); }
+        .judge-avatar { width: 120px; height: 120px; margin: 0 auto 20px; border-radius: 50%; border: 2px solid rgba(0,240,255,0.2); filter: blur(3px) grayscale(100%); transition: 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275); position: relative; overflow: hidden; z-index: 2; transform: translateZ(40px);}
         .judge-avatar img { width: 100%; height: 100%; object-fit: cover; }
         .judge-card:hover .judge-avatar { filter: blur(0px) grayscale(0%); border-color: var(--primary); box-shadow: 0 0 20px var(--primary) inset; }
-        
-        .judge-name { font-size: 1.2rem; color: var(--text); font-weight: bold; margin-bottom: 5px; position: relative; z-index: 2; text-shadow: 0 2px 4px #000;}
-        .judge-role { color: var(--secondary); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; font-family: var(--font-main); position: relative; z-index: 2; text-shadow: 0 2px 4px #000;}
+        .judge-name { font-size: 1.2rem; color: var(--text); font-weight: bold; margin-bottom: 5px; position: relative; z-index: 2; text-shadow: 0 2px 4px #000; font-family: var(--font-display); transform: translateZ(20px);}
+        .judge-role { color: var(--secondary); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; font-family: var(--font-main); position: relative; z-index: 2; text-shadow: 0 2px 4px #000; transform: translateZ(10px);}
 
         /* PURE CSS SPONSORS (NO IMAGES) */
         .sponsor-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }
         .sponsor-card { height: 120px; background: rgba(10, 11, 16, 0.6); backdrop-filter: blur(5px); border: 1px solid rgba(0, 240, 255, 0.2); display: flex; justify-content: center; align-items: center; position: relative; overflow: hidden; transition: 0.4s; text-decoration: none; color: inherit; border-radius: 8px; box-shadow: inset 0 0 20px rgba(0,240,255,0.05); }
-        .sponsor-card h3 { z-index: 2; font-size: 1.5rem; letter-spacing: 4px; transition: 0.3s; color: rgba(255,255,255,0.5); font-family: var(--font-main); font-weight: bold; }
+        .sponsor-card h3 { z-index: 2; font-size: 1.5rem; letter-spacing: 4px; transition: 0.3s; color: rgba(255,255,255,0.5); font-family: var(--font-display); font-weight: bold; }
         .sponsor-card::after { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: repeating-linear-gradient(transparent, transparent 2px, var(--primary) 3px, var(--primary) 3px), linear-gradient(90deg, transparent, rgba(0,240,255,0.1), transparent); background-size: 100% 4px, 100% 100%; opacity: 0; z-index: 1; transition: 0.3s; pointer-events: none;}
-        
         .sponsor-card:hover { border-color: var(--primary); box-shadow: 0 0 30px rgba(0,240,255,0.2), inset 0 0 20px rgba(0,240,255,0.1); transform: translateY(-5px); }
         .sponsor-card:hover h3 { color: var(--primary); text-shadow: 0 0 15px var(--primary); letter-spacing: 6px; }
         .sponsor-card:hover::after { opacity: 1; animation: scan 1s linear infinite; }
-        @keyframes scan { 0% { background-position: 0 0, 0 0; } 100% { background-position: 0 50px, 100px 0; } }
 
         /* INTERACTIVE 3D GLOBE MAP */
         .map-container { display: flex; align-items: center; gap: 50px; flex-wrap: wrap; justify-content: center;}
@@ -175,14 +212,18 @@
         .faq-q { padding: 20px; font-weight: bold; cursor: pointer; display: flex; justify-content: space-between; align-items: center; color: var(--text); font-family: var(--font-main); }
         .faq-q::after { content: '+'; color: var(--primary); font-size: 1.5rem; transition: 0.3s; }
         .faq-item.active .faq-q::after { content: '-'; color: var(--secondary); transform: rotate(180deg); }
-        .faq-a { padding: 0 20px; max-height: 0; opacity: 0; overflow: hidden; transition: all 0.3s ease-in-out; color: #aaa; }
+        .faq-a { padding: 0 20px; max-height: 0; opacity: 0; overflow: hidden; transition: all 0.3s ease-in-out; color: #aaa; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;}
         .faq-item.active .faq-a { padding: 0 20px 20px 20px; max-height: 200px; opacity: 1; }
 
-        /* FOOTER */
+        /* FOOTER & SCROLL TOP */
         footer { background: rgba(10, 11, 16, 0.4); backdrop-filter: blur(5px); padding: 40px 10%; text-align: center; border-top: 1px solid rgba(0,240,255,0.2); position: relative; z-index: 10; font-family: var(--font-main); }
         .social-nodes a { color: var(--primary); margin: 0 15px; text-decoration: none; text-transform: uppercase; letter-spacing: 1px; transition: 0.3s; }
         .social-nodes a:hover { color: var(--secondary); text-shadow: 0 0 8px var(--secondary); }
         .footer-text { margin-top: 20px; color: #666; font-size: 0.9rem; }
+        
+        .scroll-top { position: fixed; bottom: 30px; right: 30px; width: 40px; height: 40px; background: rgba(10, 11, 16, 0.8); border: 1px solid var(--primary); color: var(--primary); display: flex; justify-content: center; align-items: center; cursor: pointer; z-index: 100; opacity: 0; pointer-events: none; transition: 0.3s; box-shadow: 0 0 10px rgba(0,240,255,0.2); font-family: var(--font-main); font-weight: bold; font-size: 1.2rem;}
+        .scroll-top.visible { opacity: 1; pointer-events: auto; }
+        .scroll-top:hover { background: var(--primary); color: var(--base); box-shadow: 0 0 20px var(--primary); }
 
         /* TERMINAL MODAL */
         .modal { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(2,2,4,0.95); backdrop-filter: blur(10px); display: flex; justify-content: center; align-items: center; z-index: 2000; opacity: 0; pointer-events: none; transition: 0.3s; }
@@ -190,308 +231,340 @@
         .terminal { width: 90%; max-width: 600px; background: #000; border: 1px solid var(--primary); box-shadow: 0 0 30px rgba(0,240,255,0.2); padding: 30px; font-family: var(--font-main); position: relative; }
         .term-header { border-bottom: 1px solid var(--primary); padding-bottom: 10px; margin-bottom: 20px; color: var(--primary); font-weight: bold; display: flex; justify-content: space-between;}
         .close-btn { color: var(--secondary); cursor: pointer; text-shadow: 0 0 5px var(--secondary); }
-        .term-body { color: var(--primary); min-height: 150px; margin-bottom: 20px; line-height: 1.5; }
+        .term-body { color: var(--primary); min-height: 150px; margin-bottom: 20px; line-height: 1.5; max-height: 300px; overflow-y: auto;}
         .input-line { display: flex; gap: 10px; align-items: center;}
         .input-line span { color: var(--secondary); }
         .term-input { background: transparent; border: none; border-bottom: 1px solid var(--primary); color: #fff; font-family: var(--font-main); width: 100%; outline: none; font-size: 1rem; }
-        
+        .term-error { color: var(--secondary); font-size: 0.8rem; margin-top: 5px; display: none; }
+
         /* SYSTEM NOTIFICATIONS */
         #overclock-msg { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #00ff00; color: #000; padding: 10px 20px; font-family: var(--font-main); font-weight: bold; border-radius: 4px; z-index: 10000; opacity: 0; pointer-events: none; transition: 0.3s; text-align: center; }
         #overclock-msg.show { opacity: 1; }
 
         /* RESPONSIVE FIXES */
         @media (max-width: 768px) {
-            .nav-links { display: none; }
+            .nav-links { position: fixed; top: 70px; left: -100%; width: 100%; height: calc(100vh - 70px); background: rgba(2,2,4,0.95); flex-direction: column; justify-content: center; align-items: center; gap: 30px; backdrop-filter: blur(10px); }
+            .nav-links.nav-active { left: 0; }
+            .nav-links a { margin-left: 0; font-size: 1.2rem; }
+            .hamburger { display: flex; }
+            .cy-btn.nav-btn { display: none; } /* Hide register btn in nav on mobile */
             .glitch { font-size: 3rem; }
             .timeline::before { left: 10px; }
             .tl-item { padding-left: 40px; }
             .tl-item::before { left: 4px; }
             .map-container { flex-direction: column; }
             .prize-card.grand { transform: scale(1); }
-            .prize-card.grand:hover { transform: translateY(-5px); }
+            
+            /* Disable custom cursor and 3D tilt on mobile for performance/usability */
             .cursor-dot, .cursor-outline { display: none; } 
             * { cursor: auto !important; }
+            .prize-card, .judge-card { transform: none !important; transition: border-color 0.4s; }
             
             /* Scale down 3D Carousel on Mobile */
             .carousel-container { transform: scale(0.65); margin-top: -20px; margin-bottom: -50px; }
         }
+
+        /* ACCESSIBILITY: REDUCED MOTION */
+        @media (prefers-reduced-motion: reduce) {
+            * { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+            .glitch::before, .glitch::after { animation: none; display: none; }
+            .carousel { animation: none; transform: none !important; position: static; flex-direction: column; height: auto; gap: 20px;}
+            .track-card { position: static; transform: none !important; margin: 0 auto;}
+            .carousel-container { height: auto; perspective: none; }
+            #network-canvas { display: none; }
+            .cursor-dot, .cursor-outline { display: none; }
+        }
     </style>
 </head>
 <body>
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+    <div id="scroll-progress"></div>
+    <div class="crt-overlay"></div>
 
-    <div id="overclock-msg">SYSTEM OVERCLOCKED: MATRIX MODE ENGAGED</div>
+    <div id="overclock-msg" role="alert" aria-live="assertive">SYSTEM OVERCLOCKED: MATRIX MODE ENGAGED</div>
 
-    <div class="cursor-dot" id="cursor-dot"></div>
-    <div class="cursor-outline" id="cursor-outline"></div>
+    <div class="cursor-dot" id="cursor-dot" aria-hidden="true"></div>
+    <div class="cursor-outline" id="cursor-outline" aria-hidden="true"></div>
 
-    <div id="preloader">
-        <div class="loader-text">INITIALIZING HACK_IE³ OS...</div>
+    <div id="preloader" aria-live="polite">
+        <div class="loader-text" id="preloader-text">INITIALIZING HACK_IE³ OS...</div>
         <div class="loader-bar"></div>
     </div>
 
-    <canvas id="network-canvas"></canvas>
+    <canvas id="network-canvas" aria-hidden="true"></canvas>
     <div class="vignette"></div>
 
     <nav>
         <div class="logo">HACK_IE³</div>
-        <div class="nav-links">
-            <a href="#about" class="magnetic play-sound hover-target">Protocol</a>
-            <a href="#tracks" class="magnetic play-sound hover-target">Directives</a>
-            <a href="#timeline" class="magnetic play-sound hover-target">Timeline</a>
-            <a href="#bounties" class="magnetic play-sound hover-target">Bounties</a>
-            <a href="#judges" class="magnetic play-sound hover-target">Overseers</a>
+        <div class="hamburger hover-target" id="hamburger" aria-label="Toggle navigation" role="button" tabindex="0">
+            <span></span>
+            <span></span>
+            <span></span>
         </div>
-        <button class="cy-btn magnetic play-sound hover-target" onclick="initTerminal()">Connect</button>
+        <div class="nav-links" id="nav-links">
+            <a href="#about" class="magnetic play-sound hover-target nav-item active">Protocol</a>
+            <a href="#tracks" class="magnetic play-sound hover-target nav-item">Directives</a>
+            <a href="#timeline" class="magnetic play-sound hover-target nav-item">Timeline</a>
+            <a href="#bounties" class="magnetic play-sound hover-target nav-item">Bounties</a>
+            <a href="#judges" class="magnetic play-sound hover-target nav-item">Overseers</a>
+        </div>
+        <button class="cy-btn nav-btn magnetic play-sound hover-target" onclick="initTerminal()" aria-label="Open Terminal to Connect">Connect</button>
     </nav>
 
-    <header id="about">
-        <h1 class="glitch hover-target" data-text="HACK_IE³">HACK_IE³</h1>
-        <p>A 48-hour neural dive into the future of decentralized tech, AI, and systems architecture. No limits. No boundaries. Code the impossible.</p>
-        
-        <div class="countdown hover-target">
-            <div class="time-box">
-                <span class="time-val" id="cd-days">00</span>
-                <span class="time-label">Days</span>
-            </div>
-            <div class="time-box">
-                <span class="time-val" id="cd-hours">00</span>
-                <span class="time-label">Hours</span>
-            </div>
-            <div class="time-box">
-                <span class="time-val" id="cd-mins">00</span>
-                <span class="time-label">Mins</span>
-            </div>
-            <div class="time-box">
-                <span class="time-val" id="cd-secs">00</span>
-                <span class="time-label">Secs</span>
-            </div>
-        </div>
-
-        <button class="cy-btn magnetic play-sound hover-target" onclick="initTerminal()">Initialize Registration</button>
-    </header>
-
-    <section id="stats">
-        <div class="stats-grid hover-target">
-            <div class="stat-box">
-                <span class="stat-num" data-target="500">0</span><span class="stat-plus">+</span>
-                <span class="stat-label">Hackers</span>
-            </div>
-            <div class="stat-box">
-                <span class="stat-num" data-target="48">0</span>
-                <span class="stat-label">Hours of Code</span>
-            </div>
-            <div class="stat-box">
-                <span class="stat-prefix">₹</span><span class="stat-num" data-target="175000">0</span>
-                <span class="stat-label">In Bounties</span>
-            </div>
-        </div>
-    </section>
-
-    <section id="tracks" style="overflow: hidden;">
-        <h2 class="sec-title hover-target" style="display: block; text-align: center; width: 100%;">System Directives</h2>
-        <p style="text-align: center; color: #888; margin-bottom: 20px;">Hover to isolate. Click to initiate external knowledge retrieval.</p>
-        
-        <div class="carousel-container hover-target">
-            <div class="carousel">
-                <a href="https://www.google.com/search?q=AI+and+Neural+Networks+hackathon+project+ideas" target="_blank" class="track-card play-sound" style="--i: 0;">
-                    <div class="track-title">< AI & Neural Nets /></div>
-                    <div class="track-desc">Train, prompt, and deploy. Build agents that solve real-world problems.</div>
-                    <span class="track-explore">Search Ideas ↗</span>
-                </a>
-                <a href="https://www.google.com/search?q=Web3+and+DeFi+hackathon+project+ideas" target="_blank" class="track-card play-sound" style="--i: 1;">
-                    <div class="track-title">< Web3 & DeFi /></div>
-                    <div class="track-desc">Decentralize everything. Write smart contracts and redefine digital ownership.</div>
-                    <span class="track-explore">Search Ideas ↗</span>
-                </a>
-                <a href="https://www.google.com/search?q=Cyber-Security+hackathon+project+ideas" target="_blank" class="track-card play-sound" style="--i: 2;">
-                    <div class="track-title">< Cyber-Security /></div>
-                    <div class="track-desc">Defend the grid. Build tools for encryption and threat detection.</div>
-                    <span class="track-explore">Search Ideas ↗</span>
-                </a>
-                <a href="https://www.google.com/search?q=Autonomous+Robotics+hardware+hackathon+ideas" target="_blank" class="track-card play-sound" style="--i: 3;">
-                    <div class="track-title">< Auto-Robotics /></div>
-                    <div class="track-desc">Build vision-guided systems, embedded hardware solutions, and IoT.</div>
-                    <span class="track-explore">Search Ideas ↗</span>
-                </a>
-                <a href="https://www.google.com/search?q=Open+Innovation+best+hackathon+projects" target="_blank" class="track-card play-sound" style="--i: 4;">
-                    <div class="track-title">< Open Innovation /></div>
-                    <div class="track-desc">No limits. No predefined categories. Solve a unique problem using any stack.</div>
-                    <span class="track-explore">Search Ideas ↗</span>
-                </a>
-            </div>
-        </div>
-    </section>
-
-    <section id="timeline">
-        <h2 class="sec-title hover-target">Execution Sequence</h2>
-        <div class="timeline">
-            <div class="tl-item hover-target">
-                <span class="tl-time">04/06/26 - 09:00H</span>
-                <div class="tl-content">
-                    <h3>Mainframe Access</h3>
-                    <p>Hackers check-in, form teams, and establish local development environments. Opening remarks by lead engineers.</p>
-                </div>
-            </div>
-            <div class="tl-item hover-target">
-                <span class="tl-time">05/06/26 - 12:00H</span>
-                <div class="tl-content">
-                    <h3>Compile Start</h3>
-                    <p>The 48-hour hacking window opens. Server access granted. API keys distributed.</p>
-                </div>
-            </div>
-            <div class="tl-item hover-target">
-                <span class="tl-time">06/06/26 - 14:00H</span>
-                <div class="tl-content">
-                    <h3>Node Synchronization</h3>
-                    <p>Mid-point check-ins. Workshops on Web3 integration and LLM fine-tuning. Food rations deployed.</p>
-                </div>
-            </div>
-            <div class="tl-item hover-target">
-                <span class="tl-time">07/06/26 - 12:00H</span>
-                <div class="tl-content">
-                    <h3>System Freeze</h3>
-                    <p>Pencils down. Git pushes finalized. Preparation for pitch architecture and live demos.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section id="bounties">
-        <h2 class="sec-title hover-target">System Bounties</h2>
-        <p style="margin-bottom: 40px; color: #888;">Decrypt the mainframe. Claim the rewards.</p>
-        <div class="prize-grid">
-            <div class="prize-card hover-target">
-                <div class="prize-rank">Best UI/UX Node</div>
-                <div class="prize-amount">₹25,000</div>
-                <div class="prize-desc">Awarded to the team with the most seamless, visually stunning, and user-centric frontend interface.</div>
-            </div>
-            <div class="prize-card grand hover-target">
-                <div class="prize-rank">Global First Place</div>
-                <div class="prize-amount">₹1,00,000</div>
-                <div class="prize-desc">The ultimate prize. Awarded for the most innovative, technically complex, and perfectly executed project of the event.</div>
-            </div>
-            <div class="prize-card hover-target">
-                <div class="prize-rank">Best Deep Tech</div>
-                <div class="prize-amount">₹50,000</div>
-                <div class="prize-desc">Awarded for the best utilization of Machine Learning, Blockchain, or hardware-integrated software.</div>
-            </div>
-        </div>
-    </section>
-
-    <section id="judges">
-        <h2 class="sec-title hover-target">The Overseers</h2>
-        <p style="margin-bottom: 40px; color: #888;">Hover to decrypt identity.</p>
-        <div class="judge-grid">
-            <div class="judge-card hover-target">
-                <div class="judge-avatar">
-                    <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Arjun Reddy">
-                </div>
-                <div class="judge-name">Arjun Reddy</div><br>
-                <div class="judge-role">Lead AI Engineer, Google</div>
-            </div>
-            <div class="judge-card hover-target">
-                <div class="judge-avatar">
-                    <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="Priya Sharma">
-                </div>
-                <div class="judge-name">Priya Sharma</div><br>
-                <div class="judge-role">Web3 Architect, Meta</div>
-            </div>
-            <div class="judge-card hover-target">
-                <div class="judge-avatar">
-                    <img src="https://randomuser.me/api/portraits/men/86.jpg" alt="Vikram Patel">
-                </div>
-                <div class="judge-name">Vikram Patel</div><br>
-                <div class="judge-role">Head of Security, Amazon</div>
-            </div>
-            <div class="judge-card hover-target">
-                <div class="judge-avatar">
-                    <img src="https://randomuser.me/api/portraits/women/68.jpg" alt="Neha Gupta">
-                </div>
-                <div class="judge-name">Neha Gupta</div><br>
-                <div class="judge-role">Core Developer, Microsoft</div>
-            </div>
-        </div>
-    </section>
-
-    <section id="sponsors">
-        <h2 class="sec-title hover-target">Network Sponsors</h2>
-        <p style="margin-bottom: 30px; color: #888;">Click to establish external data link.</p>
-        <div class="sponsor-grid">
-            <a href="https://www.microsoft.com/" target="_blank" class="sponsor-card hover-target play-sound">
-                <h3>MICROSOFT</h3>
-            </a>
-            <a href="https://about.google/" target="_blank" class="sponsor-card hover-target play-sound">
-                <h3>GOOGLE</h3>
-            </a>
-            <a href="https://www.apple.com/" target="_blank" class="sponsor-card hover-target play-sound">
-                <h3>APPLE</h3>
-            </a>
-            <a href="https://about.meta.com/" target="_blank" class="sponsor-card hover-target play-sound">
-                <h3>META</h3>
-            </a>
-            <a href="https://www.amazon.com/" target="_blank" class="sponsor-card hover-target play-sound">
-                <h3>AMAZON</h3>
-            </a>
-            <a href="https://www.netflix.com/" target="_blank" class="sponsor-card hover-target play-sound">
-                <h3>NETFLIX</h3>
-            </a>
-        </div>
-    </section>
-
-    <section id="location">
-        <h2 class="sec-title hover-target">Drop Zone</h2>
-        <div class="map-container">
-            <div class="map-info">
-                <h3 style="font-size: 2rem; color: var(--primary); margin-bottom: 10px;">Jadavpur University</h3>
-                <p style="color: #aaa; margin-bottom: 20px;">Coordinates: 22.4986° N, 88.3714° E<br>Access Level: Green (All Hackers)</p>
-                <a href="https://www.google.com/maps/search/Jadavpur+University" target="_blank" class="cy-btn magnetic play-sound hover-target">Get Coordinates</a>
+    <main id="main-content">
+        <header id="about">
+            <h1 class="glitch hover-target" data-text="HACK_IE³">HACK_IE³</h1>
+            <div class="hero-subtitle">
+                <span id="typewriter"></span><span class="cursor-blink"></span>
             </div>
             
-            <div class="globe-wrapper hover-target" id="globe-container">
-                <div class="globe-hint">CLICK & DRAG TO ROTATE</div>
+            <div class="countdown hover-target" aria-label="Countdown timer">
+                <div class="time-box">
+                    <span class="time-val" id="cd-days">00</span>
+                    <span class="time-label">Days</span>
+                </div>
+                <div class="time-box">
+                    <span class="time-val" id="cd-hours">00</span>
+                    <span class="time-label">Hours</span>
+                </div>
+                <div class="time-box">
+                    <span class="time-val" id="cd-mins">00</span>
+                    <span class="time-label">Mins</span>
+                </div>
+                <div class="time-box">
+                    <span class="time-val" id="cd-secs">00</span>
+                    <span class="time-label">Secs</span>
+                </div>
             </div>
-        </div>
-    </section>
 
-    <section id="faq">
-        <h2 class="sec-title hover-target">Data Queries</h2>
-        <div class="faq-grid">
-            <div class="faq-item hover-target">
-                <div class="faq-q">Who can participate?</div>
-                <div class="faq-a">Any undergraduate or graduate student with a passion for coding. You don't need to be a Computer Science major to hack with us.</div>
+            <button class="cy-btn magnetic play-sound hover-target" onclick="initTerminal()">Initialize Registration</button>
+        </header>
+
+        <section id="stats" class="fade-in-section">
+            <div class="stats-grid hover-target">
+                <div class="stat-box">
+                    <span class="stat-num" data-target="500">0</span><span class="stat-plus">+</span>
+                    <span class="stat-label">Hackers</span>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-num" data-target="48">0</span>
+                    <span class="stat-label">Hours of Code</span>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-prefix">₹</span><span class="stat-num" data-target="175000">0</span>
+                    <span class="stat-label">In Bounties</span>
+                </div>
             </div>
-            <div class="faq-item hover-target">
-                <div class="faq-q">How much does it cost?</div>
-                <div class="faq-a">Zero. HackIE³ is completely free. We provide the food, swag, and Wi-Fi; you provide the code.</div>
+        </section>
+
+        <section id="tracks" style="overflow: hidden;" class="fade-in-section">
+            <h2 class="sec-title hover-target" style="display: block; text-align: center; width: 100%;">System Directives</h2>
+            <p style="text-align: center; color: #888; margin-bottom: 20px;">Hover to isolate. Click to initiate external knowledge retrieval.</p>
+            
+            <div class="carousel-container hover-target">
+                <div class="carousel">
+                    <a href="https://www.google.com/search?q=AI+and+Neural+Networks+hackathon+project+ideas" target="_blank" rel="noopener noreferrer" class="track-card play-sound" style="--i: 0;">
+                        <div class="track-title">< AI & Neural Nets /></div>
+                        <div class="track-desc">Train, prompt, and deploy. Build agents that solve real-world problems.</div>
+                        <span class="track-explore">Search Ideas ↗</span>
+                    </a>
+                    <a href="https://www.google.com/search?q=Web3+and+DeFi+hackathon+project+ideas" target="_blank" rel="noopener noreferrer" class="track-card play-sound" style="--i: 1;">
+                        <div class="track-title">< Web3 & DeFi /></div>
+                        <div class="track-desc">Decentralize everything. Write smart contracts and redefine digital ownership.</div>
+                        <span class="track-explore">Search Ideas ↗</span>
+                    </a>
+                    <a href="https://www.google.com/search?q=Cyber-Security+hackathon+project+ideas" target="_blank" rel="noopener noreferrer" class="track-card play-sound" style="--i: 2;">
+                        <div class="track-title">< Cyber-Security /></div>
+                        <div class="track-desc">Defend the grid. Build tools for encryption and threat detection.</div>
+                        <span class="track-explore">Search Ideas ↗</span>
+                    </a>
+                    <a href="https://www.google.com/search?q=Autonomous+Robotics+hardware+hackathon+ideas" target="_blank" rel="noopener noreferrer" class="track-card play-sound" style="--i: 3;">
+                        <div class="track-title">< Auto-Robotics /></div>
+                        <div class="track-desc">Build vision-guided systems, embedded hardware solutions, and IoT.</div>
+                        <span class="track-explore">Search Ideas ↗</span>
+                    </a>
+                    <a href="https://www.google.com/search?q=Open+Innovation+best+hackathon+projects" target="_blank" rel="noopener noreferrer" class="track-card play-sound" style="--i: 4;">
+                        <div class="track-title">< Open Innovation /></div>
+                        <div class="track-desc">No limits. No predefined categories. Solve a unique problem using any stack.</div>
+                        <span class="track-explore">Search Ideas ↗</span>
+                    </a>
+                </div>
             </div>
-            <div class="faq-item hover-target">
-                <div class="faq-q">Do I need a team?</div>
-                <div class="faq-a">You can hack solo or in teams of up to 4. If you don't have a team, we have team-building events on Day 1 to help you find one!</div>
+        </section>
+
+        <section id="timeline" class="fade-in-section">
+            <h2 class="sec-title hover-target">Execution Sequence</h2>
+            <div class="timeline">
+                <div class="tl-item hover-target">
+                    <span class="tl-time">04/06/26 - 09:00H</span>
+                    <div class="tl-content">
+                        <h3>Mainframe Access</h3>
+                        <p>Hackers check-in, form teams, and establish local development environments. Opening remarks by lead engineers.</p>
+                    </div>
+                </div>
+                <div class="tl-item hover-target">
+                    <span class="tl-time">05/06/26 - 12:00H</span>
+                    <div class="tl-content">
+                        <h3>Compile Start</h3>
+                        <p>The 48-hour hacking window opens. Server access granted. API keys distributed.</p>
+                    </div>
+                </div>
+                <div class="tl-item hover-target">
+                    <span class="tl-time">06/06/26 - 14:00H</span>
+                    <div class="tl-content">
+                        <h3>Node Synchronization</h3>
+                        <p>Mid-point check-ins. Workshops on Web3 integration and LLM fine-tuning. Food rations deployed.</p>
+                    </div>
+                </div>
+                <div class="tl-item hover-target">
+                    <span class="tl-time">07/06/26 - 12:00H</span>
+                    <div class="tl-content">
+                        <h3>System Freeze</h3>
+                        <p>Pencils down. Git pushes finalized. Preparation for pitch architecture and live demos.</p>
+                    </div>
+                </div>
             </div>
-        </div>
-    </section>
+        </section>
+
+        <section id="bounties" class="fade-in-section">
+            <h2 class="sec-title hover-target">System Bounties</h2>
+            <p style="margin-bottom: 40px; color: #888;">Decrypt the mainframe. Claim the rewards.</p>
+            <div class="prize-grid">
+                <div class="prize-card tilt-card hover-target">
+                    <div class="prize-rank">Best UI/UX Node</div>
+                    <div class="prize-amount">₹25,000</div>
+                    <div class="prize-desc">Awarded to the team with the most seamless, visually stunning, and user-centric frontend interface.</div>
+                </div>
+                <div class="prize-card grand tilt-card hover-target">
+                    <div class="prize-rank">Global First Place</div>
+                    <div class="prize-amount">₹1,00,000</div>
+                    <div class="prize-desc">The ultimate prize. Awarded for the most innovative, technically complex, and perfectly executed project of the event.</div>
+                </div>
+                <div class="prize-card tilt-card hover-target">
+                    <div class="prize-rank">Best Deep Tech</div>
+                    <div class="prize-amount">₹50,000</div>
+                    <div class="prize-desc">Awarded for the best utilization of Machine Learning, Blockchain, or hardware-integrated software.</div>
+                </div>
+            </div>
+        </section>
+
+        <section id="judges" class="fade-in-section">
+            <h2 class="sec-title hover-target">The Overseers</h2>
+            <p style="margin-bottom: 40px; color: #888;">Hover to decrypt identity.</p>
+            <div class="judge-grid">
+                <div class="judge-card tilt-card hover-target">
+                    <div class="judge-avatar">
+                        <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Arjun Reddy">
+                    </div>
+                    <div class="judge-name">Arjun Reddy</div><br>
+                    <div class="judge-role">Lead AI Engineer, Google</div>
+                </div>
+                <div class="judge-card tilt-card hover-target">
+                    <div class="judge-avatar">
+                        <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="Priya Sharma">
+                    </div>
+                    <div class="judge-name">Priya Sharma</div><br>
+                    <div class="judge-role">Web3 Architect, Meta</div>
+                </div>
+                <div class="judge-card tilt-card hover-target">
+                    <div class="judge-avatar">
+                        <img src="https://randomuser.me/api/portraits/men/86.jpg" alt="Vikram Patel">
+                    </div>
+                    <div class="judge-name">Vikram Patel</div><br>
+                    <div class="judge-role">Head of Security, Amazon</div>
+                </div>
+                <div class="judge-card tilt-card hover-target">
+                    <div class="judge-avatar">
+                        <img src="https://randomuser.me/api/portraits/women/68.jpg" alt="Neha Gupta">
+                    </div>
+                    <div class="judge-name">Neha Gupta</div><br>
+                    <div class="judge-role">Core Developer, Microsoft</div>
+                </div>
+            </div>
+        </section>
+
+        <section id="sponsors" class="fade-in-section">
+            <h2 class="sec-title hover-target">Network Sponsors</h2>
+            <p style="margin-bottom: 30px; color: #888;">Click to establish external data link.</p>
+            <div class="sponsor-grid">
+                <a href="https://www.microsoft.com/" target="_blank" rel="noopener noreferrer" class="sponsor-card hover-target play-sound" aria-label="Microsoft">
+                    <h3>MICROSOFT</h3>
+                </a>
+                <a href="https://about.google/" target="_blank" rel="noopener noreferrer" class="sponsor-card hover-target play-sound" aria-label="Google">
+                    <h3>GOOGLE</h3>
+                </a>
+                <a href="https://www.apple.com/" target="_blank" rel="noopener noreferrer" class="sponsor-card hover-target play-sound" aria-label="Apple">
+                    <h3>APPLE</h3>
+                </a>
+                <a href="https://about.meta.com/" target="_blank" rel="noopener noreferrer" class="sponsor-card hover-target play-sound" aria-label="Meta">
+                    <h3>META</h3>
+                </a>
+                <a href="https://www.amazon.com/" target="_blank" rel="noopener noreferrer" class="sponsor-card hover-target play-sound" aria-label="Amazon">
+                    <h3>AMAZON</h3>
+                </a>
+                <a href="https://www.netflix.com/" target="_blank" rel="noopener noreferrer" class="sponsor-card hover-target play-sound" aria-label="Netflix">
+                    <h3>NETFLIX</h3>
+                </a>
+            </div>
+        </section>
+
+        <section id="location" class="fade-in-section">
+            <h2 class="sec-title hover-target">Drop Zone</h2>
+            <div class="map-container">
+                <div class="map-info">
+                    <h3 style="font-size: 2rem; color: var(--primary); margin-bottom: 10px; font-family: var(--font-display);">Jadavpur University</h3>
+                    <p style="color: #aaa; margin-bottom: 20px; font-family: var(--font-main);">Coordinates: 22.4986° N, 88.3714° E<br>Access Level: Green (All Hackers)</p>
+                    <a href="https://www.google.com/maps/search/Jadavpur+University" target="_blank" rel="noopener noreferrer" class="cy-btn magnetic play-sound hover-target">Get Coordinates</a>
+                </div>
+                
+                <div class="globe-wrapper hover-target" id="globe-container" aria-label="Interactive 3D Globe">
+                    <div class="globe-hint">CLICK & DRAG TO ROTATE</div>
+                </div>
+            </div>
+        </section>
+
+        <section id="faq" class="fade-in-section">
+            <h2 class="sec-title hover-target">Data Queries</h2>
+            <div class="faq-grid">
+                <div class="faq-item hover-target">
+                    <div class="faq-q" tabindex="0" role="button" aria-expanded="false">Who can participate?</div>
+                    <div class="faq-a">Any undergraduate or graduate student with a passion for coding. You don't need to be a Computer Science major to hack with us.</div>
+                </div>
+                <div class="faq-item hover-target">
+                    <div class="faq-q" tabindex="0" role="button" aria-expanded="false">How much does it cost?</div>
+                    <div class="faq-a">Zero. HackIE³ is completely free. We provide the food, swag, and Wi-Fi; you provide the code.</div>
+                </div>
+                <div class="faq-item hover-target">
+                    <div class="faq-q" tabindex="0" role="button" aria-expanded="false">Do I need a team?</div>
+                    <div class="faq-a">You can hack solo or in teams of up to 4. If you don't have a team, we have team-building events on Day 1 to help you find one!</div>
+                </div>
+            </div>
+        </section>
+    </main>
 
     <footer>
         <div class="social-nodes">
-            <a href="#" class="play-sound hover-target">[ GitHub ]</a>
-            <a href="#" class="play-sound hover-target">[ Twitter ]</a>
-            <a href="#" class="play-sound hover-target">[ Discord ]</a>
+            <a href="#" class="play-sound hover-target" aria-label="GitHub">[ GitHub ]</a>
+            <a href="#" class="play-sound hover-target" aria-label="Twitter">[ Twitter ]</a>
+            <a href="#" class="play-sound hover-target" aria-label="Discord">[ Discord ]</a>
         </div>
         <p class="footer-text hover-target">© 2026 HackIE³ by Apurba Samanta.</p>
     </footer>
 
-    <div class="modal" id="terminalModal">
+    <div class="scroll-top play-sound hover-target" id="scroll-top" onclick="window.scrollTo(0,0)" aria-label="Scroll to top">↑</div>
+
+    <div class="modal" id="terminalModal" role="dialog" aria-modal="true" aria-labelledby="term-title">
         <div class="terminal">
             <div class="term-header">
-                <span>admin@hackie3: ~/registration</span>
-                <span class="close-btn hover-target play-sound" onclick="closeTerminal()">[X] ABORT</span>
+                <span id="term-title">admin@hackie3: ~/registration</span>
+                <span class="close-btn hover-target play-sound" onclick="closeTerminal()" role="button" tabindex="0">[X] ABORT</span>
             </div>
-            <div class="term-body" id="term-output">
-                </div>
+            <div class="term-body" id="term-output" aria-live="polite"></div>
             <div class="input-line" id="term-input-container" style="display: none;">
                 <span>></span>
-                <form onsubmit="submitForm(event)" style="width: 100%;">
-                    <input type="text" class="term-input hover-target" id="t-input" placeholder="..." required autocomplete="off">
+                <form onsubmit="submitForm(event)" style="width: 100%; position: relative;">
+                    <input type="text" class="term-input hover-target" id="t-input" placeholder="..." required autocomplete="off" aria-label="Terminal Input">
+                    <div id="term-error" class="term-error">Error: Invalid format.</div>
                 </form>
             </div>
         </div>
@@ -501,28 +574,146 @@
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 
     <script>
-        // PRELOADER
+        // SMART PRELOADER BOOT SEQUENCE
+        const bootMessages = [
+            "INITIALIZING HACK_IE³ OS...",
+            "LOADING NEURAL DRIVERS...",
+            "BYPASSING SECURITY PROTOCOLS...",
+            "MOUNTING DECENTRALIZED NODES...",
+            "SYSTEM READY."
+        ];
+        
         window.addEventListener('load', () => {
-            setTimeout(() => {
-                const preloader = document.getElementById('preloader');
-                preloader.style.opacity = '0';
-                setTimeout(() => { preloader.style.display = 'none'; }, 500);
-            }, 1500);
+            const preloaderText = document.getElementById('preloader-text');
+            const preloader = document.getElementById('preloader');
+            let i = 0;
+            
+            const bootInterval = setInterval(() => {
+                i++;
+                if (i < bootMessages.length) {
+                    preloaderText.innerText = bootMessages[i];
+                } else {
+                    clearInterval(bootInterval);
+                    setTimeout(() => {
+                        preloader.style.opacity = '0';
+                        setTimeout(() => { preloader.style.display = 'none'; }, 500);
+                        startTypewriter(); // Start hero subtitle typing after load
+                    }, 500);
+                }
+            }, 400);
         });
+
+        // TYPEWRITER EFFECT
+        function startTypewriter() {
+            const text = "A 48-hour neural dive into the future of decentralized tech, AI, and systems architecture. No limits. No boundaries. Code the impossible.";
+            const target = document.getElementById('typewriter');
+            let index = 0;
+            
+            function type() {
+                if (index < text.length) {
+                    target.innerHTML += text.charAt(index);
+                    index++;
+                    setTimeout(type, Math.random() * 30 + 10);
+                }
+            }
+            setTimeout(type, 500);
+        }
+
+        // SCROLL PROGRESS BAR & SCROLL-TO-TOP & SCROLL SPY
+        const scrollProgress = document.getElementById('scroll-progress');
+        const scrollTopBtn = document.getElementById('scroll-top');
+        const sections = document.querySelectorAll('section, header');
+        const navItems = document.querySelectorAll('.nav-item');
+
+        window.addEventListener('scroll', () => {
+            // Progress Bar
+            const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+            const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            const scrolled = (winScroll / height) * 100;
+            scrollProgress.style.width = scrolled + "%";
+
+            // Scroll Top Button
+            if (winScroll > 500) scrollTopBtn.classList.add('visible');
+            else scrollTopBtn.classList.remove('visible');
+
+            // Active Nav Scroll Spy
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                if (scrollY >= (sectionTop - 150)) {
+                    current = section.getAttribute('id');
+                }
+            });
+            navItems.forEach(item => {
+                item.classList.remove('active');
+                if (item.getAttribute('href').includes(current)) {
+                    item.classList.add('active');
+                }
+            });
+        });
+
+        // MOBILE HAMBURGER MENU
+        const hamburger = document.getElementById('hamburger');
+        const navLinks = document.getElementById('nav-links');
+        
+        hamburger.addEventListener('click', () => {
+            hamburger.classList.toggle('active');
+            navLinks.classList.toggle('nav-active');
+        });
+        
+        document.querySelectorAll('.nav-item').forEach(n => n.addEventListener('click', () => {
+            hamburger.classList.remove('active');
+            navLinks.classList.remove('nav-active');
+        }));
+
+        // SECTION ENTRANCE ANIMATIONS (Intersection Observer)
+        const fadeObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if(entry.isIntersecting) {
+                    entry.target.classList.add('is-visible');
+                    fadeObserver.unobserve(entry.target); // Only animate once
+                }
+            });
+        }, { threshold: 0.15 });
+        document.querySelectorAll('.fade-in-section').forEach(el => fadeObserver.observe(el));
+
+        // 3D CARD TILT EFFECT (For Bounty & Judge cards)
+        if (window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
+            const tiltCards = document.querySelectorAll('.tilt-card');
+            tiltCards.forEach(card => {
+                card.addEventListener('mousemove', e => {
+                    const rect = card.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    const centerX = rect.width / 2;
+                    const centerY = rect.height / 2;
+                    const rotateX = ((y - centerY) / centerY) * -10; // Max 10 deg rotation
+                    const rotateY = ((x - centerX) / centerX) * 10;
+                    card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+                });
+                card.addEventListener('mouseleave', () => {
+                    card.style.transform = `perspective(1000px) rotateX(0deg) rotateY(0deg)`;
+                });
+            });
+        }
 
         // CUSTOM CURSOR
         const dot = document.getElementById("cursor-dot");
         const outline = document.getElementById("cursor-outline");
         const hoverTargets = document.querySelectorAll(".hover-target");
 
-        window.addEventListener("mousemove", (e) => {
-            dot.style.left = `${e.clientX}px`;
-            dot.style.top = `${e.clientY}px`;
-            setTimeout(() => {
-                outline.style.left = `${e.clientX}px`;
-                outline.style.top = `${e.clientY}px`;
-            }, 50);
-        });
+        // Disable custom cursor if reduced motion
+        const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+        if(!prefersReducedMotion.matches) {
+            window.addEventListener("mousemove", (e) => {
+                dot.style.left = `${e.clientX}px`;
+                dot.style.top = `${e.clientY}px`;
+                setTimeout(() => {
+                    outline.style.left = `${e.clientX}px`;
+                    outline.style.top = `${e.clientY}px`;
+                }, 50);
+            });
+        }
 
         hoverTargets.forEach(target => {
             target.addEventListener("mouseenter", () => outline.classList.add("hover"));
@@ -536,9 +727,8 @@
         document.addEventListener('keydown', (e) => {
             if (document.activeElement.tagName === 'INPUT') return;
             keySequence += e.key.toLowerCase();
-            if (keySequence.length > 6) {
-                keySequence = keySequence.slice(-6);
-            }
+            if (keySequence.length > 6) keySequence = keySequence.slice(-6);
+            
             if (keySequence.endsWith("unhack")) {
                 if (isOverclocked) deactivateOverclock();
             } else if (keySequence.endsWith("hack")) {
@@ -561,8 +751,7 @@
             osc.frequency.setValueAtTime(440, audioCtx.currentTime);
             osc.frequency.setValueAtTime(880, audioCtx.currentTime + 0.1);
             osc.connect(audioCtx.destination);
-            osc.start();
-            osc.stop(audioCtx.currentTime + 0.2);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.2);
         }
 
         function deactivateOverclock() {
@@ -580,13 +769,13 @@
             osc.frequency.setValueAtTime(880, audioCtx.currentTime); 
             osc.frequency.setValueAtTime(440, audioCtx.currentTime + 0.1);
             osc.connect(audioCtx.destination);
-            osc.start();
-            osc.stop(audioCtx.currentTime + 0.2);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.2);
         }
 
         // WEB AUDIO API
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         function playHoverBeep() {
+            if(prefersReducedMotion.matches) return; // respect reduced motion/sound
             if(audioCtx.state === 'suspended') audioCtx.resume();
             const oscillator = audioCtx.createOscillator();
             const gainNode = audioCtx.createGain();
@@ -597,8 +786,7 @@
             gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
             oscillator.connect(gainNode);
             gainNode.connect(audioCtx.destination);
-            oscillator.start();
-            oscillator.stop(audioCtx.currentTime + 0.1);
+            oscillator.start(); oscillator.stop(audioCtx.currentTime + 0.1);
         }
         document.querySelectorAll('.play-sound').forEach(el => {
             el.addEventListener('mouseenter', playHoverBeep);
@@ -630,6 +818,7 @@
         window.addEventListener('resize', initCanvas);
 
         function drawCanvas() {
+            if(prefersReducedMotion.matches) return; // Stop drawing loop if reduced motion
             ctx.clearRect(0, 0, width, height);
             const particleColor = isOverclocked ? 'rgba(0, 255, 0, 0.5)' : 'rgba(0, 240, 255, 0.5)';
             const lineColor = isOverclocked ? 'rgba(0, 255, 0, 0.1)' : 'rgba(0, 240, 255, 0.1)';
@@ -666,21 +855,24 @@
             }
             requestAnimationFrame(drawCanvas);
         }
-        initCanvas(); drawCanvas();
+        initCanvas(); 
+        if(!prefersReducedMotion.matches) drawCanvas();
 
         // MAGNETIC BUTTONS
         const magnets = document.querySelectorAll('.magnetic');
-        magnets.forEach(btn => {
-            btn.addEventListener('mousemove', function(e) {
-                const pos = this.getBoundingClientRect();
-                const x = e.clientX - pos.left - pos.width / 2;
-                const y = e.clientY - pos.top - pos.height / 2;
-                this.style.transform = `translate(${x * 0.3}px, ${y * 0.3}px) scale(1.05)`;
+        if (!prefersReducedMotion.matches) {
+            magnets.forEach(btn => {
+                btn.addEventListener('mousemove', function(e) {
+                    const pos = this.getBoundingClientRect();
+                    const x = e.clientX - pos.left - pos.width / 2;
+                    const y = e.clientY - pos.top - pos.height / 2;
+                    this.style.transform = `translate(${x * 0.3}px, ${y * 0.3}px) scale(1.05)`;
+                });
+                btn.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translate(0px, 0px) scale(1)';
+                });
             });
-            btn.addEventListener('mouseleave', function() {
-                this.style.transform = 'translate(0px, 0px) scale(1)';
-            });
-        });
+        }
 
         // SCROLL ANIMATION (Timeline)
         const observer = new IntersectionObserver((entries) => {
@@ -717,30 +909,49 @@
         const statsSection = document.getElementById('stats');
         if(statsSection) statsObserver.observe(statsSection);
 
-        // FAQ ACCORDION
+        // FAQ ACCORDION (Added ARIA attributes)
         const faqItems = document.querySelectorAll('.faq-item');
         faqItems.forEach(item => {
-            item.querySelector('.faq-q').addEventListener('click', () => {
+            const q = item.querySelector('.faq-q');
+            q.addEventListener('click', () => {
                 const isActive = item.classList.contains('active');
-                faqItems.forEach(i => i.classList.remove('active'));
-                if(!isActive) item.classList.add('active');
+                faqItems.forEach(i => {
+                    i.classList.remove('active');
+                    i.querySelector('.faq-q').setAttribute('aria-expanded', 'false');
+                });
+                if(!isActive) {
+                    item.classList.add('active');
+                    q.setAttribute('aria-expanded', 'true');
+                }
+            });
+            // Keyboard accessibility
+            q.addEventListener('keydown', (e) => {
+                if(e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    q.click();
+                }
             });
         });
 
-        // MATCHMAKING TERMINAL LOGIC
+        // SMARTER MATCHMAKING TERMINAL LOGIC
         const modal = document.getElementById('terminalModal');
         const output = document.getElementById('term-output');
         const inputCont = document.getElementById('term-input-container');
         const tInput = document.getElementById('t-input');
+        const tError = document.getElementById('term-error');
         let typeSpeed = 30;
         let termState = 0; 
+        
+        // Form Validation Regex
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
         function initTerminal() {
             modal.classList.add('active');
             output.innerHTML = '';
             inputCont.style.display = 'none';
+            tError.style.display = 'none';
             termState = 0;
-            tInput.type = 'email';
+            tInput.type = 'text'; // keep text to handle easter eggs easily
             tInput.placeholder = "Enter valid email to request access key...";
             tInput.value = '';
             
@@ -752,19 +963,17 @@
                 "Please authenticate identity below."
             ];
             
-            let lineIndex = 0;
-            let charIndex = 0;
+            let lineIndex = 0; let charIndex = 0;
             function typeLine() {
                 if(lineIndex < text.length) {
                     if(charIndex < text[lineIndex].length) {
                         if(charIndex === 0) output.innerHTML += '<br>> ';
                         output.innerHTML += text[lineIndex].charAt(charIndex);
                         charIndex++;
+                        output.scrollTop = output.scrollHeight; // Auto scroll to bottom
                         setTimeout(typeLine, typeSpeed);
                     } else {
-                        lineIndex++;
-                        charIndex = 0;
-                        setTimeout(typeLine, 150);
+                        lineIndex++; charIndex = 0; setTimeout(typeLine, 150);
                     }
                 } else {
                     inputCont.style.display = 'flex';
@@ -778,17 +987,32 @@
 
         function submitForm(e) {
             e.preventDefault();
-            const inputVal = tInput.value;
+            const inputVal = tInput.value.trim();
+            tError.style.display = 'none';
+            
+            // Easter Eggs
+            if(inputVal.toLowerCase() === 'clear') { output.innerHTML = ''; tInput.value = ''; return; }
+            if(inputVal.toLowerCase() === 'sudo') {
+                output.innerHTML += `<br>> sudo<br><span style="color:var(--secondary)">> ACCESS DENIED. Nice try, hacker.</span>`;
+                tInput.value = ''; output.scrollTop = output.scrollHeight; return;
+            }
             
             if(termState === 0) {
+                // Email Validation
+                if(!emailRegex.test(inputVal)) {
+                    tError.innerText = "Error: Invalid email format detected.";
+                    tError.style.display = "block";
+                    return;
+                }
+
                 inputCont.style.display = 'none';
                 output.innerHTML += `<br>> ${inputVal}`;
-                output.innerHTML += `<br><span style="color:var(--secondary)">> Authenticated.</span>`;
+                output.innerHTML += `<br><span style="color:var(--secondary)">> Authenticated via secure link.</span>`;
                 
                 setTimeout(() => {
                     output.innerHTML += `<br><br>> Team Status Verification Required.`;
                     output.innerHTML += `<br>> Enter [SOLO] for matchmaking or [SQUAD] if team established.`;
-                    tInput.type = 'text';
+                    output.scrollTop = output.scrollHeight;
                     tInput.value = '';
                     tInput.placeholder = "Type SOLO or SQUAD...";
                     inputCont.style.display = 'flex';
@@ -805,18 +1029,21 @@
                     setTimeout(() => {
                         if(val === 'SOLO') {
                             output.innerHTML += `<br><span style="color:var(--primary)">> LONE WOLF DETECTED. Routing to matchmaking server...</span>`;
+                            output.scrollTop = output.scrollHeight;
                             setTimeout(() => {
                                 window.open('https://discord.com', '_blank');
                                 closeTerminal();
                             }, 2000);
                         } else {
                             output.innerHTML += `<br><span style="color:#00ff00">> SQUAD DETECTED. ACCESS GRANTED. CREDENTIALS SENT TO INBOX.</span>`;
+                            output.scrollTop = output.scrollHeight;
                             setTimeout(() => { closeTerminal(); }, 2000);
                         }
                     }, 800);
                 } else {
+                    tError.innerText = "Error: Command unrecognized. Type SOLO or SQUAD.";
+                    tError.style.display = "block";
                     tInput.value = '';
-                    tInput.placeholder = "Invalid. Type SOLO or SQUAD...";
                 }
             }
         }
@@ -828,24 +1055,16 @@
             const distance = targetDate - now;
             if (distance < 0) {
                 clearInterval(countdownInterval);
-                document.getElementById("cd-days").innerText = "00";
-                document.getElementById("cd-hours").innerText = "00";
-                document.getElementById("cd-mins").innerText = "00";
-                document.getElementById("cd-secs").innerText = "00";
+                ["cd-days", "cd-hours", "cd-mins", "cd-secs"].forEach(id => document.getElementById(id).innerText = "00");
                 return;
             }
-            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-
-            document.getElementById("cd-days").innerText = days.toString().padStart(2, '0');
-            document.getElementById("cd-hours").innerText = hours.toString().padStart(2, '0');
-            document.getElementById("cd-mins").innerText = minutes.toString().padStart(2, '0');
-            document.getElementById("cd-secs").innerText = seconds.toString().padStart(2, '0');
+            document.getElementById("cd-days").innerText = Math.floor(distance / (1000 * 60 * 60 * 24)).toString().padStart(2, '0');
+            document.getElementById("cd-hours").innerText = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)).toString().padStart(2, '0');
+            document.getElementById("cd-mins").innerText = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)).toString().padStart(2, '0');
+            document.getElementById("cd-secs").innerText = Math.floor((distance % (1000 * 60)) / 1000).toString().padStart(2, '0');
         }, 1000);
 
-        // REAL 3D EARTH MODEL (Three.js) WITH REALISTIC AXIAL TILT
+        // ENHANCED 3D EARTH MODEL (Three.js) WITH ATMOSPHERE & WIREFRAME FALLBACK
         const globeContainer = document.getElementById('globe-container');
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 1000);
@@ -862,16 +1081,45 @@
 
         const earthGeo = new THREE.SphereGeometry(5, 50, 50);
         const textureLoader = new THREE.TextureLoader();
-        const earthMat = new THREE.MeshStandardMaterial({
-            map: textureLoader.load('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg'),
+        
+        // Using a try-catch pattern for texture loading to implement the wireframe fallback
+        let earthMat;
+        textureLoader.load(
+            'https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg',
+            function (texture) {
+                earthMat.map = texture;
+                earthMat.needsUpdate = true;
+                earthMat.wireframe = false; // Turn off wireframe when loaded
+            },
+            undefined,
+            function (err) {
+                console.warn('Failed to load Earth texture. Falling back to wireframe.');
+            }
+        );
+
+        // Initial material is wireframe in case image fails to load
+        earthMat = new THREE.MeshStandardMaterial({
+            color: 0x00f0ff,
+            wireframe: true,
             roughness: 0.8,
             metalness: 0.2
         });
-        const earth = new THREE.Mesh(earthGeo, earthMat);
         
-        // Realistic Earth Axial Tilt (23.5 degrees)
+        const earth = new THREE.Mesh(earthGeo, earthMat);
         earth.rotation.z = 23.5 * Math.PI / 180;
         scene.add(earth);
+
+        // Additive Blend Atmosphere
+        const atmosGeo = new THREE.SphereGeometry(5.2, 50, 50);
+        const atmosMat = new THREE.MeshBasicMaterial({
+            color: 0x00f0ff,
+            transparent: true,
+            opacity: 0.15,
+            blending: THREE.AdditiveBlending,
+            side: THREE.BackSide
+        });
+        const atmos = new THREE.Mesh(atmosGeo, atmosMat);
+        scene.add(atmos);
 
         const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
         scene.add(ambientLight);
@@ -907,22 +1155,19 @@
         const controls = new THREE.OrbitControls(camera, renderer.domElement);
         controls.enableZoom = false;
         controls.enablePan = false;
-        controls.autoRotate = false; // Turned off camera rotation to let the earth spin on its own axis
+        controls.autoRotate = false; 
 
         let clock = new THREE.Clock();
         function animate() {
             requestAnimationFrame(animate);
             controls.update();
-            
-            // True planetary rotation on its tilted axis
             earth.rotation.y += 0.005;
-
             let t = clock.getElapsedTime();
             glow.scale.setScalar(1 + 0.4 * Math.sin(t * 4));
             glow.material.opacity = 0.6 + 0.2 * Math.sin(t * 4);
             renderer.render(scene, camera);
         }
-        animate();
+        if(!prefersReducedMotion.matches) animate(); else renderer.render(scene, camera);
     </script>
 </body>
 </html>
