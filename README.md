@@ -1,8 +1,8 @@
-# 💻 HackIE³ | System Override
+# 💻 Hack_IE³ | System Override
 
 > *A 48-hour neural dive into the future of decentralized tech, AI, and systems architecture. No limits. No boundaries. Code the impossible.*
 
-HackIE³ is a fully immersive, interactive, and highly optimized cyberpunk-themed hackathon landing page. Built entirely with Vanilla HTML, CSS, and JavaScript in a single file, it features 3D rendering, a custom audio engine, particle networks, and hidden terminal easter eggs.
+Hack_IE³ is a fully immersive, interactive, and highly optimized cyberpunk-themed hackathon landing page. Built entirely with Vanilla HTML, CSS, and JavaScript in a single file, it features 3D rendering, a custom audio engine, particle networks, and hidden terminal easter eggs.
 
 ## ✨ Features
 
